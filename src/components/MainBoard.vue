@@ -1,0 +1,45 @@
+<template>
+    <el-container>
+        <el-header>
+            <header-bar>
+            </header-bar>
+        </el-header>
+        <el-container>
+            <el-aside width="205px" id="mainSider">
+              <sider-bar></sider-bar>
+            </el-aside>
+            <el-main>
+              <router-view/>
+            </el-main>
+        </el-container>
+    </el-container>
+</template>
+
+<script>
+import HeaderBar from './HeaderBar'
+import SiderBar from './SiderBar'
+
+export default {
+  name: 'MainBoard',
+  components: {
+    HeaderBar, SiderBar
+  },
+  data () {
+    return {
+    }
+  }
+}
+</script>
+
+<style scoped>
+  .el-header{
+    line-height: 60px;
+    background-color: #545c64
+  }
+  .el-aside {
+    background-color: #E9EBFE;
+  }
+  .el-container{
+    background-color: #E9EBFE;
+  }
+</style>
