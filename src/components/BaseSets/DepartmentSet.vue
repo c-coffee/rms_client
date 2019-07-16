@@ -76,6 +76,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'DepartmentSet',
   data () {
@@ -105,6 +106,22 @@ export default {
     }
   },
   methods: {
+    getDeptList: function () {
+      axios({
+        method: 'get',
+        url: '/api/department/getDeptList'
+      })
+        .then((res) => {
+          this.deptData = res.data
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     showAddDialog: function () {
       this.addDeptDialogVisible = true
     },
@@ -128,6 +145,9 @@ export default {
     handleEdit: function (index, row) {
       this.modifyDeptDialogVisible = true
     }
+  },
+  mounted: function () {
+    this.getDeptList()
   }
 }
 </script>
