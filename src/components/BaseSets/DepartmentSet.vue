@@ -46,14 +46,20 @@
     title="添加科室信息"
     :visible.sync="addDeptDialogVisible"
     width="350px">
-      <el-form :model="addForm">
-        <el-form-item label="科室名称" label-width="100px">
+      <el-form :model="addForm" ref="addDeptForm">
+        <el-form-item
+          label="科室名称"
+          label-width="100px"
+          :rules="[
+            {required: true, message:'科室名称不能为空', trigger: 'blur'}
+          ]"
+          >
           <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addDeptDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDeptDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addDepartment">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 修改部门信息对话框 -->
@@ -62,7 +68,13 @@
     :visible.sync="modifyDeptDialogVisible"
     width="350px">
       <el-form :model="addForm">
-        <el-form-item label="科室名称" label-width="100px">
+        <el-form-item
+          label="科室名称"
+          label-width="100px"
+          :rules="[
+            {required: true, message:'科室名称不能为空', trigger: 'blur'}
+          ]"
+          >
           <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -121,6 +133,50 @@ export default {
             type: 'error'
           })
         })
+    },
+
+    // 添加部门
+    addDepartment: function () {
+      // todo 先判断在列表中是否存在相同的科室名称
+      this.$refs['addDeptForm'].validate((isPass, object) => {
+        if (!isPass) {
+          this.$message({
+            message: '请输入完整信息！',
+            type: 'error'
+          })
+        } else {
+          axios({
+            method: 'post',
+            url: '/api/department/addDept',
+            data: {
+              deptName: this.addForm.deptName
+            }
+          })
+            .then((res) => {
+              if (res.data.result === 1) {
+                // 成功则关闭窗口，不成功不关闭
+                this.$message({
+                  message: res.data.msg,
+                  type: 'success'
+                })
+                this.$emit('addSuccess', this.form)
+                this.closeDialog()
+              } else {
+                this.$message({
+                  message: res.data.msg,
+                  type: 'error'
+                })
+              }
+            })
+            .catch((err) => {
+              console.log(err)
+              this.$message({
+                message: '服务器错误！',
+                type: 'error'
+              })
+            })
+        }
+      })
     },
     showAddDialog: function () {
       this.addDeptDialogVisible = true
