@@ -8,7 +8,7 @@
             <el-button @click.stop="showAddDialog" style="float: right; padding: 3px 0" type="text">添加</el-button>
           </div>
           <el-table
-          :data="typeData"
+          :data="reagentData"
           style="width: 100%"
           max-height="450"
           >
@@ -44,10 +44,16 @@
     <!-- 添加试剂类型信息对话框 -->
     <el-dialog
     title="添加试剂类型"
-    :visible.sync="addDeptDialogVisible"
+    :visible.sync="addDialogVisible"
     width="350px">
       <el-form :model="addForm">
-        <el-form-item label="类型名称" label-width="100px">
+        <el-form-item
+          prop="reagentType"
+          :rules="[
+            {required: true, message:'科室名称不能为空', trigger: 'blur'}
+          ]"
+          label="类型名称"
+          label-width="100px">
           <el-input v-model="addForm.reagentType" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -76,12 +82,13 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
-  name: 'DepartmentSet',
+  name: 'ReagentTypeSet',
   data () {
     return {
-      // 初始部门模拟数据
-      typeData: [
+      // 初始试剂性状数据
+      reagentData: [
         {
           typeId: 1,
           typeName: '固体'
@@ -97,16 +104,32 @@ export default {
       ],
       // 添加科室信息表单对应对象
       addForm: {
-        reagentTypeName: ''
+        reagentType: ''
       },
-      addRgtDialogVisible: false, // 添加试剂类型窗口控制标识
+      addDialogVisible: false, // 添加试剂类型窗口控制标识
       modifyRgtDialogVisible: false, // 修改试剂类型窗口控制标识
       deleteRgtDialogVisible: true // 添加试剂类型窗口控制标识
     }
   },
   methods: {
+    getReagentTypeList: function () {
+      axios({
+        method: 'get',
+        url: '/api/reagentType/getReagentTypeList'
+      })
+        .then((res) => {
+          this.reagentData = res.data
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     showAddDialog: function () {
-      this.addRgtDialogVisible = true
+      this.addDialogVisible = true
     },
     handleDelete: function (index, row) {
       this.$confirm('您确定删除试剂类型吗?', '提示', {
@@ -128,6 +151,9 @@ export default {
     handleEdit: function (index, row) {
       this.modifyRgtDialogVisible = true
     }
+  },
+  mounted: function () {
+    this.getReagentTypeList()
   }
 }
 </script>
