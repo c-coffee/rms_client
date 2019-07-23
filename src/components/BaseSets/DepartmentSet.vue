@@ -161,7 +161,6 @@ export default {
                     message: res.data.msg,
                     type: 'success'
                   })
-                  this.$emit('addSuccess', this.form)
                   this.addDeptDialogVisible = false
                   this.getDeptList()
                 } else {
@@ -210,8 +209,6 @@ export default {
                 message: res.data.msg,
                 type: 'success'
               })
-              this.$emit('addSuccess', this.form)
-              this.modifyDeptDialogVisible = false
               this.getDeptList()
             } else {
               this.$message({
@@ -272,7 +269,6 @@ export default {
                       message: res.data.msg,
                       type: 'success'
                     })
-                    this.$emit('addSuccess', this.form)
                     this.modifyDeptDialogVisible = false
                     this.getDeptList()
                   } else {
