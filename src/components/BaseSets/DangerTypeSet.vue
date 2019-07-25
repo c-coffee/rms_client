@@ -174,6 +174,7 @@ export default {
                     message: res.data.msg,
                     type: 'success'
                   })
+                  this.$refs['addForm'].resetFields()
                   this.addDangerTypeDialogVisible = false
                   this.getDangerTypeList()
                 } else {

@@ -107,16 +107,34 @@
     title="添加供应商信息"
     :visible.sync="addSupplierDialogVisible"
     width="600px">
-      <el-form :model="addForm" style="margin-right:30px">
+      <el-form
+      :model="addForm"
+      style="margin-right:30px"
+      ref="addForm"
+      >
         <el-row>
           <el-col :span="12">
-            <el-form-item label="名称" label-width="100px">
-              <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+            <el-form-item
+            label="名称"
+            label-width="100px"
+            prop="supplierName"
+            :rules="[
+            {required: true, message:'供应商名称不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-input v-model="addForm.supplierName" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="等级" label-width="100px">
-              <el-select v-model="value" placeholder="请选择">
+            <el-form-item
+            label="等级"
+            label-width="100px"
+            prop="supplierLevel"
+            :rules="[
+            {required: true, message:'等级不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-select v-model="addForm.supplierLevel" placeholder="请选择">
                 <el-option
                   v-for="item in options"
                   :key="item.value"
@@ -129,41 +147,113 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="联系人" label-width="100px">
-              <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+            <el-form-item
+            label="联系人"
+            label-width="100px"
+            prop="supplierContact"
+            :rules="[
+            {required: true, message:'联系人不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="addForm.supplierContact" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="联系电话" label-width="100px">
-              <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+            <el-form-item
+            label="联系电话"
+            label-width="100px"
+            prop="supplierContactPhone"
+            :rules="[
+            {required: true, message:'联系电话不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="addForm.supplierContactPhone" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="地址" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+        <el-form-item label="地址" label-width="100px" prop="supplierAddress">
+          <el-input v-model="addForm.supplierAddress" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="备注" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+        <el-form-item label="备注" label-width="100px" prop="remark">
+          <el-input v-model="addForm.remark" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addSupplierDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addSupplierDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addSupplier">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 修改部门信息对话框 -->
     <el-dialog
     title="修改科室信息"
     :visible.sync="modifySupplierDialogVisible"
-    width="350px">
-      <el-form :model="addForm">
-        <el-form-item label="科室名称" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+    width="600px">
+      <el-form :model="editForm" ref="editForm">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="名称"
+            label-width="100px"
+            prop="supplierName"
+            :rules="[
+            {required: true, message:'供应商名称不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-input v-model="editForm.supplierName" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="等级"
+            label-width="100px"
+            prop="supplierLevel"
+            :rules="[
+            {required: true, message:'等级不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-select v-model="editForm.supplierLevel" placeholder="请选择">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="联系人"
+            label-width="100px"
+            prop="supplierContact"
+            :rules="[
+            {required: true, message:'联系人不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="editForm.supplierContact" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="联系电话"
+            label-width="100px"
+            prop="supplierContactPhone"
+            :rules="[
+            {required: true, message:'联系电话不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="editForm.supplierContactPhone" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="地址" label-width="100px" prop="supplierAddress">
+          <el-input v-model="editForm.supplierAddress" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" label-width="100px" prop="remark">
+          <el-input v-model="editForm.remark" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="modifyDeptDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="modifyDeptDialogVisible = false">确 定</el-button>
+        <el-button @click="modifySupplierDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editSupplier">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 删除部门信息对话框采用 MessageBox弹框方式 -->
@@ -171,8 +261,9 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
-  name: 'DepartmentSet',
+  name: 'SupplierManage',
   data () {
     return {
       // 供应商等级
@@ -195,58 +286,183 @@ export default {
         }
       ],
       // 初始供应商模拟数据
-      supplierData: [
-        {
-          supplierID: 1,
-          supplierName: '裕丰药业',
-          supplierAddress: '长沙市八一路467号',
-          supplierContact: '章三',
-          supplierContactPhone: '13911223344',
-          supplierLevel: 'A',
-          remark: '主要供应甲乙丙丁等药剂'
-        },
-        {
-          supplierID: 2,
-          supplierName: '大唐制药公司',
-          supplierAddress: '长沙市八一路467号',
-          supplierContact: '礼四',
-          supplierContactPhone: '13911223344',
-          supplierLevel: 'A',
-          remark: '主要供应甲乙丙丁等药剂'
-        },
-        {
-          supplierID: 3,
-          supplierName: '和顺制药',
-          supplierAddress: '长沙市八一路467号',
-          supplierContact: '汪五',
-          supplierContactPhone: '13911223344',
-          supplierLevel: 'A',
-          remark: '主要供应甲乙丙丁等药剂'
-        }
-      ],
+      supplierData: [],
       // 添加科室信息表单对应对象
-      addForm: {
-        deptName: ''
-      },
+      addForm: {},
+      editForm: {},
       addSupplierDialogVisible: false, // 添加科室信息窗口控制标识
-      modifySupplierDialogVisible: false, // 修改科室信息窗口控制标识
-      deleteSupplierDialogVisible: true // 添加科室信息窗口控制标识
+      modifySupplierDialogVisible: false // 修改科室信息窗口控制标识
     }
   },
   methods: {
+    addSupplier: function () {
+      // todo 先判断在列表中是否存在相同的供应商名称
+      this.$refs['addForm'].validate((isPass, object) => {
+        if (!isPass) {
+          this.$message({
+            message: '请输入完整信息！',
+            type: 'error'
+          })
+        } else {
+          let flag = true
+          for (let i = 0; i < this.supplierData.length; i++) {
+            if (this.addForm.supplierName === this.supplierData[i].supplierName) {
+              flag = false
+              break
+            }
+          }
+          if (flag) {
+            axios({
+              method: 'post',
+              url: '/api/supplier/addSupplier',
+              data: {
+                supplierInfo: this.addForm
+              }
+            })
+              .then((res) => {
+                if (res.data.result === 1) {
+                  // 成功则关闭窗口，不成功不关闭
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'success'
+                  })
+                  // console.log(this.$refs)
+                  this.$refs['addForm'].resetFields()
+                  this.addSupplierDialogVisible = false
+                  this.getSupplierList()
+                } else {
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'error'
+                  })
+                }
+              })
+              .catch((err) => {
+                console.log(err)
+                this.$message({
+                  message: '服务器错误！',
+                  type: 'error'
+                })
+              })
+          } else {
+            this.$message({
+              type: 'error',
+              message: '该供应商已存在!'
+            })
+          }
+        }
+      })
+    },
+    editSupplier: function () {
+      // todo 先判断在列表中是否存在相同的供应商名称
+      this.$refs['editForm'].validate((isPass, object) => {
+        if (!isPass) {
+          this.$message({
+            message: '请输入完整信息！',
+            type: 'error'
+          })
+        } else {
+          let flag = true
+          for (let i = 0; i < this.supplierData.length; i++) {
+            if (this.editForm.supplierName === this.supplierData[i].supplierName && this.editForm.supplierID !== this.supplierData[i].supplierID) {
+              flag = false
+              break
+            }
+          }
+          if (flag) {
+            axios({
+              method: 'post',
+              url: '/api/supplier/editSupplier',
+              data: {
+                supplierInfo: this.editForm
+              }
+            })
+              .then((res) => {
+                if (res.data.result === 1) {
+                  // 成功则关闭窗口，不成功不关闭
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'success'
+                  })
+                  this.modifySupplierDialogVisible = false
+                  this.getSupplierList()
+                } else {
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'error'
+                  })
+                }
+              })
+              .catch((err) => {
+                console.log(err)
+                this.$message({
+                  message: '服务器错误！',
+                  type: 'error'
+                })
+              })
+          } else {
+            this.$message({
+              type: 'error',
+              message: '该供应商已存在!'
+            })
+          }
+        }
+      })
+    },
+    getSupplierList: function () {
+      axios({
+        method: 'get',
+        url: '/api/supplier/getSupplierList'
+      })
+        .then((res) => {
+          this.supplierData = res.data
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     showAddDialog: function () {
       this.addSupplierDialogVisible = true
     },
     handleDelete: function (index, row) {
-      this.$confirm('您确定删除科室信息吗?', '提示', {
+      this.$confirm('您确定删除供应商吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
+        axios({
+          method: 'post',
+          url: '/api/supplier/deleteSupplier',
+          data: {
+            supplierID: row.supplierID
+          }
         })
+          .then((res) => {
+            if (res.data.result === 1) {
+              // 成功则关闭窗口，不成功不关闭
+              this.$message({
+                message: res.data.msg,
+                type: 'success'
+              })
+              this.getSupplierList()
+            } else {
+              this.$message({
+                message: res.data.msg,
+                type: 'error'
+              })
+            }
+          })
+          .catch((err) => {
+            console.log(err)
+            this.$message({
+              message: '服务器错误！',
+              type: 'error'
+            })
+          })
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -255,8 +471,12 @@ export default {
       })
     },
     handleEdit: function (index, row) {
+      this.editForm = row
       this.modifySupplierDialogVisible = true
     }
+  },
+  mounted: function () {
+    this.getSupplierList()
   }
 }
 </script>

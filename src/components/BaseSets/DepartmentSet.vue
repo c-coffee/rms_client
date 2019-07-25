@@ -107,8 +107,7 @@ export default {
         deptName: ''
       },
       addDeptDialogVisible: false, // 添加科室信息窗口控制标识
-      modifyDeptDialogVisible: false, // 修改科室信息窗口控制标识
-      deleteDeptDialogVisible: true // 添加科室信息窗口控制标识
+      modifyDeptDialogVisible: false // 修改科室信息窗口控制标识
     }
   },
   methods: {
@@ -161,6 +160,7 @@ export default {
                     message: res.data.msg,
                     type: 'success'
                   })
+                  this.$refs['addForm'].resetFields()
                   this.addDeptDialogVisible = false
                   this.getDeptList()
                 } else {

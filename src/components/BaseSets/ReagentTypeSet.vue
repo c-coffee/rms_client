@@ -108,8 +108,7 @@ export default {
         typeName: ''
       },
       addDialogVisible: false, // 添加试剂类型窗口控制标识
-      modifyDialogVisible: false, // 修改试剂类型窗口控制标识
-      deleteDialogVisible: true // 添加试剂类型窗口控制标识
+      modifyDialogVisible: false // 修改试剂类型窗口控制标识
     }
   },
   methods: {
@@ -144,6 +143,7 @@ export default {
                     message: res.data.msg,
                     type: 'success'
                   })
+                  this.$refs['addForm'].resetFields()
                   this.addDialogVisible = false
                   this.getReagentTypeList()
                 } else {
