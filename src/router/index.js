@@ -4,6 +4,7 @@ import MainBoard from '@/components/MainBoard'
 import Login from '@/components/Login'
 import DepartmentSet from '@/components/BaseSets/DepartmentSet'
 import ReagentTypeSet from '@/components/BaseSets/ReagentTypeSet'
+import ReagentStateSet from '@/components/BaseSets/ReagentStateSet'
 import DangerTypeSet from '@/components/BaseSets/DangerTypeSet'
 import ModuleSet from '@/components/BaseSets/ModuleSet'
 
@@ -40,6 +41,10 @@ export default new Router({
         {
           path: '/ReagentTypeSet',
           component: ReagentTypeSet
+        },
+        {
+          path: '/ReagentStateSet',
+          component: ReagentStateSet
         },
         {
           path: '/DangerTypeSet',

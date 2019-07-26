@@ -124,10 +124,165 @@
         </el-card>
       </el-col>
     </el-row>
+    <!-- 添加部门信息对话框 -->
+    <el-dialog
+    title="添加供应商信息"
+    :visible.sync="addDialogVisible"
+    width="600px">
+      <el-form
+      :model="addForm"
+      style="margin-right:30px"
+      ref="addForm"
+      >
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="名称"
+            label-width="100px"
+            prop="reagentName"
+            :rules="[
+            {required: true, message:'试剂名称不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-input v-model="addForm.reagentName" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="类型"
+            label-width="100px"
+            prop="reagentTypeID"
+            :rules="[
+            {required: true, message:'等级不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-select v-model="addForm.reagentTypeID" placeholder="请选择">
+                <el-option
+                  v-for="item in reagentType"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="联系人"
+            label-width="100px"
+            prop="supplierContact"
+            :rules="[
+            {required: true, message:'联系人不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="addForm.supplierContact" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="联系电话"
+            label-width="100px"
+            prop="supplierContactPhone"
+            :rules="[
+            {required: true, message:'联系电话不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="addForm.supplierContactPhone" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="地址" label-width="100px" prop="supplierAddress">
+          <el-input v-model="addForm.supplierAddress" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" label-width="100px" prop="remark">
+          <el-input v-model="addForm.remark" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addSupplier">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 修改部门信息对话框 -->
+    <el-dialog
+    title="修改科室信息"
+    :visible.sync="modifyDialogVisible"
+    width="600px">
+      <el-form :model="editForm" ref="editForm">
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="名称"
+            label-width="100px"
+            prop="supplierName"
+            :rules="[
+            {required: true, message:'供应商名称不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-input v-model="editForm.supplierName" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="等级"
+            label-width="100px"
+            prop="supplierLevel"
+            :rules="[
+            {required: true, message:'等级不能为空', trigger: 'blur'}
+            ]"
+            >
+              <el-select v-model="editForm.supplierLevel" placeholder="请选择">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="联系人"
+            label-width="100px"
+            prop="supplierContact"
+            :rules="[
+            {required: true, message:'联系人不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="editForm.supplierContact" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="联系电话"
+            label-width="100px"
+            prop="supplierContactPhone"
+            :rules="[
+            {required: true, message:'联系电话不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="editForm.supplierContactPhone" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="地址" label-width="100px" prop="supplierAddress">
+          <el-input v-model="editForm.supplierAddress" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="备注" label-width="100px" prop="remark">
+          <el-input v-model="editForm.remark" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="modifyDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editSupplier">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'DepartmentSet',
   data () {
@@ -176,10 +331,54 @@ export default {
           reagentUnit: 'L',
           reagentShortCode: 'JC'
         }
-      ]
+      ],
+      addForm: {},
+      editForm: {},
+      reagentDanger: [],
+      reagentState: [],
+      reagentType: [],
+      addDialogVisible: false, // 添加试剂信息窗口控制标识
+      modifyDialogVisible: false // 修改试剂信息窗口控制标识
     }
   },
   methods: {
+    getBaseInfoList () {
+      axios({
+        method: 'get',
+        url: '/api/reagentInfo/getBaseInfo'
+      })
+        .then((res) => {
+          this.reagentDanger = res.data.reagentDanger
+          this.reagentState = res.data.reagentState
+          this.reagentType = res.data.reagentType
+          console.log(this.reagentDanger)
+          console.log(this.reagentState)
+          console.log(this.reagentType)
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
+    getReagentInfoList: function () {
+      axios({
+        method: 'get',
+        url: '/api/reagentInfo/getreagentInfoList'
+      })
+        .then((res) => {
+          this.reagentInfoData = res.data
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     showAddDialog: function () {
       this.addSupplierDialogVisible = true
     },
@@ -203,6 +402,10 @@ export default {
     handleEdit: function (index, row) {
       this.modifySupplierDialogVisible = true
     }
+  },
+  mounted: function () {
+    this.getReagentInfoList()
+    this.getBaseInfoList()
   }
 }
 </script>

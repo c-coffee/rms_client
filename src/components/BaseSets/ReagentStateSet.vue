@@ -4,7 +4,7 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>试剂类型设置</span>
+            <span>试剂性状设置</span>
             <el-button @click.stop="showAddDialog" style="float: right; padding: 3px 0" type="text">添加</el-button>
           </div>
           <el-table
@@ -13,14 +13,14 @@
           max-height="450"
           >
           <el-table-column
-              prop="typeID"
+              prop="stateID"
               label="序号"
               width="180"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="typeName"
-              label="类型名称"
+              prop="stateName"
+              label="性状类型"
               align="center">
           </el-table-column>
           <el-table-column
@@ -41,30 +41,30 @@
         </el-card>
       </el-col>
     </el-row>
-    <!-- 添加试剂类型信息对话框 -->
+    <!-- 添加试剂性状信息对话框 -->
     <el-dialog
-    title="添加试剂类型"
+    title="添加试剂性状"
     :visible.sync="addDialogVisible"
     width="350px">
       <el-form :model="addForm" ref="addForm">
         <el-form-item
-          prop="reagentType"
+          prop="stateName"
           :rules="[
-            {required: true, message:'类型名称不能为空', trigger: 'blur'}
+            {required: true, message:'性状名称不能为空', trigger: 'blur'}
           ]"
-          label="类型名称"
+          label="性状名称"
           label-width="100px">
-          <el-input v-model="addForm.reagentType" autocomplete="off"></el-input>
+          <el-input v-model="addForm.stateName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addReagentType">确 定</el-button>
+        <el-button type="primary" @click="addReagentState">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 修改试剂类型对话框 -->
+    <!-- 修改试剂性状对话框 -->
     <el-dialog
-    title="修改试剂类型"
+    title="修改试剂性状"
     :close-on-click-modal="false"
     :visible.sync="modifyDialogVisible"
     width="350px">
@@ -73,46 +73,42 @@
       ref="editForm"
       >
         <el-form-item
-        prop="typeName"
+        prop="stateName"
         label="类型名称"
         label-width="100px"
         :rules="[
-          {required: true, message:'试剂类型不能为空', trigger: 'blur'}
+          {required: true, message:'试剂性状不能为空', trigger: 'blur'}
         ]">
-          <el-input v-model="editForm.typeName" autocomplete="off"></el-input>
+          <el-input v-model="editForm.stateName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="modifyDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editReagentType">确 定</el-button>
+        <el-button type="primary" @click="editReagentState">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 删除部门信息对话框采用 MessageBox弹框方式 -->
   </div>
 </template>
 
 <script>
 import axios from 'axios'
 export default {
-  name: 'ReagentTypeSet',
+  name: 'ReagentStateSet',
   data () {
     return {
       // 初始试剂性状数据
       reagentData: [],
-      // 添加科室信息表单对应对象
-      addForm: {
-        reagentType: ''
-      },
+      // 添加试剂性状表单对应对象
+      addForm: {},
       editForm: {
-        typeID: '',
-        typeName: ''
+        stateName: ''
       },
-      addDialogVisible: false, // 添加试剂类型窗口控制标识
-      modifyDialogVisible: false // 修改试剂类型窗口控制标识
+      addDialogVisible: false, // 添加试剂性状窗口控制标识
+      modifyDialogVisible: false // 修改试剂性状窗口控制标识
     }
   },
   methods: {
-    addReagentType: function () {
+    addReagentState: function () {
       // todo 先判断在列表中是否存在相同的科室名称
       this.$refs['addForm'].validate((isPass, object) => {
         if (!isPass) {
@@ -123,7 +119,7 @@ export default {
         } else {
           let flag = true
           for (let i = 0; i < this.reagentData.length; i++) {
-            if (this.addForm.reagentType === this.reagentData[i].reagentType) {
+            if (this.addForm.stateName === this.reagentData[i].stateName) {
               flag = false
               break
             }
@@ -131,9 +127,9 @@ export default {
           if (flag) {
             axios({
               method: 'post',
-              url: '/api/reagentType/addReagentType',
+              url: '/api/reagentState/addReagentState',
               data: {
-                typeName: this.addForm.reagentType
+                stateName: this.addForm.stateName
               }
             })
               .then((res) => {
@@ -145,7 +141,7 @@ export default {
                   })
                   this.$refs['addForm'].resetFields()
                   this.addDialogVisible = false
-                  this.getReagentTypeList()
+                  this.getReagentStateList()
                 } else {
                   this.$message({
                     message: res.data.msg,
@@ -163,16 +159,16 @@ export default {
           } else {
             this.$message({
               type: 'error',
-              message: '该试剂类型已存在!'
+              message: '该性状类型已存在!'
             })
           }
         }
       })
     },
-    getReagentTypeList: function () {
+    getReagentStateList: function () {
       axios({
         method: 'get',
-        url: '/api/reagentType/getReagentTypeList'
+        url: '/api/reagentState/getReagentStateList'
       })
         .then((res) => {
           this.reagentData = res.data
@@ -189,16 +185,16 @@ export default {
       this.addDialogVisible = true
     },
     handleDelete: function (index, row) {
-      this.$confirm('您确定删除试剂类型吗?', '提示', {
+      this.$confirm('您确定删除性状类型吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         axios({
           method: 'post',
-          url: '/api/reagentType/deleteReagentType',
+          url: '/api/reagentState/deleteReagentState',
           data: {
-            typeID: row.typeID
+            stateID: row.stateID
           }
         })
           .then((res) => {
@@ -208,7 +204,7 @@ export default {
                 message: res.data.msg,
                 type: 'success'
               })
-              this.getReagentTypeList()
+              this.getReagentStateList()
             } else {
               this.$message({
                 message: res.data.msg,
@@ -231,11 +227,11 @@ export default {
       })
     },
     handleEdit: function (index, row) {
-      this.editForm.typeID = row.typeID
-      this.editForm.typeName = row.typeName
+      this.editForm.stateID = row.stateID
+      this.editForm.stateName = row.stateName
       this.modifyDialogVisible = true
     },
-    editReagentType: function () {
+    editReagentState: function () {
       this.$refs['editForm'].validate((isPass, object) => {
         if (isPass) {
           if (!isPass) {
@@ -246,7 +242,7 @@ export default {
           } else {
             let flag = true
             for (let i = 0; i < this.reagentData.length; i++) {
-              if (this.editForm.typeName === this.reagentData[i].typeName) {
+              if (this.editForm.stateName === this.reagentData[i].stateName) {
                 flag = false
                 break
               }
@@ -254,11 +250,9 @@ export default {
             if (flag) {
               axios({
                 method: 'post',
-                url: '/api/reagentType/editReagentType',
+                url: '/api/reagentState/editReagentState',
                 data: {
-                  // deptID: this.editForm.deptID,
-                  // deptName: this.editForm.deptName
-                  reagentTypeInfo: this.editForm
+                  reagentState: this.editForm
                 }
               })
                 .then((res) => {
@@ -269,7 +263,7 @@ export default {
                       type: 'success'
                     })
                     this.modifyDialogVisible = false
-                    this.getReagentTypeList()
+                    this.getReagentStateList()
                   } else {
                     this.$message({
                       message: res.data.msg,
@@ -287,7 +281,7 @@ export default {
             } else {
               this.$message({
                 type: 'error',
-                message: '该试剂类型已存在!'
+                message: '该性状类型已存在!'
               })
             }
           }
@@ -296,7 +290,7 @@ export default {
     }
   },
   mounted: function () {
-    this.getReagentTypeList()
+    this.getReagentStateList()
   }
 }
 </script>

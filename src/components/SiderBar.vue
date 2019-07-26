@@ -18,8 +18,12 @@
               <span slot="title">科室设置</span>
             </el-menu-item>
             <el-menu-item index="/ReagentTypeSet">
+              <i class="el-icon-picture-outline"></i>
+              <span slot="title">类型设置</span>
+            </el-menu-item>
+            <el-menu-item index="/ReagentStateSet">
               <i class="el-icon-money"></i>
-              <span slot="title">性状类型</span>
+              <span slot="title">性状设置</span>
             </el-menu-item>
             <el-menu-item index="/DangerTypeSet">
               <i class="el-icon-warning-outline"></i>
