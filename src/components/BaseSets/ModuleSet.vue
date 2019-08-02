@@ -9,8 +9,7 @@
           </div>
           <el-tree
           :data="moduleData"
-          show-checkbox
-          node-key="id"
+          node-key="moduleId"
           default-expand-all
           :expand-on-click-node="false">
             <span class="custom-tree-node" slot-scope="{ node, data }">
@@ -34,25 +33,79 @@
         </el-card>
       </el-col>
     </el-row>
-    <!-- 添加部门信息对话框 -->
+    <!-- 添加模块信息对话框 -->
     <el-dialog
     title="添加科室信息"
-    :visible.sync="addDeptDialogVisible"
+    :visible.sync="addDialogVisible"
+    :close-on-click-modal="false"
     width="350px">
-      <el-form :model="addForm">
-        <el-form-item label="科室名称" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+      <el-dialog
+        width="30%"
+        title="请选择父模块"
+        :visible.sync="innerAddDialogVisible"
+        append-to-body>
+        <el-tree
+          :data="moduleData"
+          node-key="id"
+          ref="innerAddTree"
+          default-expand-all
+          @node-click="addSelectNode"
+          :expand-on-click-node="false">
+        </el-tree>
+        <div slot="footer" class="dialog-footer">
+        <el-button @click="innerAddDialogVisible = false">取 消</el-button>
+      </div>
+      </el-dialog>
+      <el-form :model="addForm" ref="addForm">
+        <el-form-item
+          label="模块名称"
+          label-width="100px"
+          prop="moduleName"
+          :rules="[
+          {required: true, message:'模块名称不能为空', trigger: 'blur'}
+          ]">
+          <el-input v-model="addForm.moduleName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item
+          label="模块代码"
+          label-width="100px"
+          prop="moduleInfo"
+          :rules="[
+          {required: true, message:'模块代码不能为空', trigger: 'blur'}
+          ]">
+          <el-input v-model="addForm.moduleInfo" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item
+          label="父模块"
+          label-width="100px"
+          prop="parent_moduleName"
+          :rules="[
+          {required: true, message:'父节点不能为空', trigger: 'blur'}
+          ]">
+          <el-input readonly="readonly" v-model="addForm.parent_moduleName" autocomplete="off">
+            <el-button slot="append" @click="innerAddDialogVisible=true">请选择</el-button>
+          </el-input>
+        </el-form-item>
+         <el-form-item
+          label="父模块ID"
+          label-width="100px"
+          prop="parent_moduleID"
+          :rules="[
+          {required: true, message:'父模块ID不能为空', trigger: 'blur'}
+          ]">
+          <el-input readonly="readonly" v-model="addForm.parent_moduleID" autocomplete="off"></el-input>
+          <el-checkbox v-model="isRoot" @change="setRootNode">根节点</el-checkbox>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="addDeptDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDeptDialogVisible = false">确 定</el-button>
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addModuleSet">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 修改部门信息对话框 -->
+    <!-- 修改模块信息对话框 -->
     <el-dialog
     title="修改科室信息"
-    :visible.sync="modifyDeptDialogVisible"
+    :visible.sync="modifyDialogVisible"
     width="350px">
       <el-form :model="addForm">
         <el-form-item label="科室名称" label-width="100px">
@@ -61,7 +114,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="modifyDeptDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="modifyDeptDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="modifyDialogVisible = false">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 删除部门信息对话框采用 MessageBox弹框方式 -->
@@ -69,70 +122,178 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'ModuleSet',
   data () {
     return {
+      isRoot: false, // 添加模块时选项，用来判断是否是根节点
+      addForm: {},
       // 模块设置 模拟数据
       moduleData: [
         {
-          id: 1,
+          moduleId: 1,
           label: '基础设置',
           children: [
             {
-              id: 4,
+              moduleId: 4,
               label: '科室设置'
             },
             {
-              id: 9,
+              moduleId: 9,
               label: '性状类型'
             },
             {
-              id: 10,
+              moduleId: 10,
               label: '危化类别'
             }
           ]
         },
         {
-          id: 2,
+          moduleId: 2,
           label: '数据管理',
           children: [{
-            id: 5,
+            moduleId: 5,
             label: '供应商'
           }, {
-            id: 6,
+            moduleId: 6,
             label: '试剂管理'
           }, {
-            id: 7,
+            moduleId: 7,
             label: '角色管理'
           }, {
-            id: 8,
+            moduleId: 8,
             label: '用户管理'
           }
           ]
         },
         {
-          id: 3,
+          moduleId: 3,
           label: '检验科室',
           children: [{
-            id: 12,
+            moduleId: 12,
             label: '试剂申领'
           }, {
-            id: 13,
+            moduleId: 13,
             label: '试剂退库'
           }]
         }],
-      addDeptDialogVisible: false, // 添加科室信息窗口控制标识
-      modifyDeptDialogVisible: false, // 修改科室信息窗口控制标识
-      deleteDeptDialogVisible: true // 添加科室信息窗口控制标识
+      addDialogVisible: false, // 添加科室信息窗口控制标识
+      innerAddDialogVisible: false, // 添加科室信息内层窗口控制标识
+      modifyDialogVisible: false // 修改科室信息窗口控制标识
     }
   },
   methods: {
-    addForm: function () {
+    addSelectNode: function (moduleInfo) {
+      this.addForm.parent_moduleName = moduleInfo.label
+      this.addForm.parent_moduleID = moduleInfo.moduleID
+      this.innerAddDialogVisible = false
+    },
+    addModuleSet: function () {
+      // todo 先判断在列表中是否存在相同的供应商名称
+      this.$refs['addForm'].validate((isPass, object) => {
+        if (!isPass) {
+          this.$message({
+            message: '请输入完整信息！',
+            type: 'error'
+          })
+        } else {
+          let flag = true
+          for (let i = 0; i < this.moduleData.length; i++) {
+            if (this.addForm.moduleName === this.moduleData[i].moduleName) {
+              flag = false
+              break
+            }
+          }
+          if (flag) {
+            axios({
+              method: 'post',
+              url: '/api/moduleSet/addModuleSet',
+              data: {
+                moduleInfo: {
+                  moduleName: this.addForm.moduleName,
+                  moduleInfo: this.addForm.moduleInfo,
+                  parent_moduleID: this.addForm.parent_moduleID
+                }
+              }
+            })
+              .then((res) => {
+                if (res.data.result === 1) {
+                  // 成功则关闭窗口，不成功不关闭
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'success'
+                  })
+                  // console.log(this.$refs)
+                  this.$refs['addForm'].resetFields()
+                  this.addSupplierDialogVisible = false
+                  this.getModuleList()
+                } else {
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'error'
+                  })
+                }
+              })
+              .catch((err) => {
+                console.log(err)
+                this.$message({
+                  message: '服务器错误！',
+                  type: 'error'
+                })
+              })
+          } else {
+            this.$message({
+              type: 'error',
+              message: '该供应商已存在!'
+            })
+          }
+        }
+      })
+    },
+    // 添加模块对话框中的根节点按钮控制
+    setRootNode: function (flag) {
+      if (flag) {
+        this.addForm.parent_moduleID = 0
+        this.addForm.parent_moduleName = '根节点'
+      } else {
+        this.addForm.parent_moduleID = ''
+        this.addForm.parent_moduleName = ''
+      }
+    },
+    append: function (data) {
 
     },
+    getModuleList: function () {
+      axios({
+        method: 'get',
+        url: '/api/moduleSet/getModuleList'
+      })
+        .then((res) => {
+          this.supplierData = res.data
+          // console.log(res.data)
+          // 获得数据后要筛选整理
+          let tempData = res.data.filter(function (item) {
+            return item.parent_moduleID === 0
+          })
+          for (let i = 0; i < tempData.length; i++) {
+            tempData[i].children = res.data.filter(function (item) {
+              return item.parent_moduleID === tempData[i].moduleID
+            })
+          }
+          this.moduleData = tempData
+          // console.log(tempData)
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     showAddDialog: function () {
-      this.addDeptDialogVisible = true
+      this.addDialogVisible = true
     },
     handleDelete: function (index, row) {
       this.$confirm('您确定删除科室信息吗?', '提示', {
@@ -152,8 +313,11 @@ export default {
       })
     },
     handleEdit: function (index, row) {
-      this.modifyDeptDialogVisible = true
+      this.modifyDialogVisible = true
     }
+  },
+  mounted: function () {
+    this.getModuleList()
   }
 }
 </script>
