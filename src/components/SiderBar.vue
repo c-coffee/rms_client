@@ -47,7 +47,7 @@
               <i class="el-icon-folder-add"></i>
               <span slot="title">试剂管理</span>
             </el-menu-item>
-            <el-menu-item index="2.3">
+            <el-menu-item index="/RoleManage">
               <i class="el-icon-collection-tag"></i>
               <span slot="title">角色管理</span>
             </el-menu-item>

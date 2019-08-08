@@ -10,6 +10,7 @@ import ModuleSet from '@/components/BaseSets/ModuleSet'
 
 import SupplierManage from '@/components/DataManage/SupplierManage'
 import ReagentInfoManage from '@/components/DataManage/ReagentInfoManage'
+import RoleManage from '@/components/DataManage/RoleManage'
 
 import ReagentApplication from '@/components/ReagentManage/ReagentApplication'
 import ReagentApplicationAdd from '@/components/ReagentManage/ReagentApplicationAdd'
@@ -61,6 +62,10 @@ export default new Router({
         {
           path: '/ReagentInfoManage',
           component: ReagentInfoManage
+        },
+        {
+          path: '/RoleManage',
+          component: RoleManage
         },
         {
           path: '/ReagentApplication',

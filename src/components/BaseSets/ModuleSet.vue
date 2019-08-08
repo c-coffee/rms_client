@@ -18,14 +18,14 @@
                 <el-button
                   type="text"
                   size="mini"
-                  @click="() => append(data)">
-                  Append
+                  @click="showEditModuleSet(node)">
+                  修改
                 </el-button>
                 <el-button
                   type="text"
                   size="mini"
-                  @click="() => remove(node, data)">
-                  Delete
+                  @click="deleteModuleSet(node)">
+                  删除
                 </el-button>
               </span>
             </span>
@@ -35,7 +35,7 @@
     </el-row>
     <!-- 添加模块信息对话框 -->
     <el-dialog
-    title="添加科室信息"
+    title="添加模块信息"
     :visible.sync="addDialogVisible"
     :close-on-click-modal="false"
     width="350px">
@@ -94,7 +94,7 @@
           {required: true, message:'父模块ID不能为空', trigger: 'blur'}
           ]">
           <el-input readonly="readonly" v-model="addForm.parent_moduleID" autocomplete="off"></el-input>
-          <el-checkbox v-model="isRoot" @change="setRootNode">根节点</el-checkbox>
+          <el-checkbox v-model="isRoot" @change="setAddRootNode">根节点</el-checkbox>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -104,17 +104,71 @@
     </el-dialog>
     <!-- 修改模块信息对话框 -->
     <el-dialog
-    title="修改科室信息"
+    title="修改模块信息"
     :visible.sync="modifyDialogVisible"
+    :close-on-click-modal="false"
     width="350px">
-      <el-form :model="addForm">
-        <el-form-item label="科室名称" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
+      <el-dialog
+        width="30%"
+        title="请选择父模块"
+        :visible.sync="innerModifyDialogVisible"
+        append-to-body>
+        <el-tree
+          :data="moduleData"
+          node-key="id"
+          ref="innerModifyTree"
+          default-expand-all
+          @node-click="addModifySelectNode"
+          :expand-on-click-node="false">
+        </el-tree>
+        <div slot="footer" class="dialog-footer">
+        <el-button @click="innerAddDialogVisible = false">取 消</el-button>
+      </div>
+      </el-dialog>
+      <el-form :model="editForm" ref="editForm">
+        <el-form-item
+          label="模块名称"
+          label-width="100px"
+          prop="moduleName"
+          :rules="[
+          {required: true, message:'模块名称不能为空', trigger: 'blur'}
+          ]">
+          <el-input v-model="editForm.moduleName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item
+          label="模块代码"
+          label-width="100px"
+          prop="moduleInfo"
+          :rules="[
+          {required: true, message:'模块代码不能为空', trigger: 'blur'}
+          ]">
+          <el-input v-model="editForm.moduleInfo" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item
+          label="父模块"
+          label-width="100px"
+          prop="parent_moduleName"
+          :rules="[
+          {required: true, message:'父节点不能为空', trigger: 'blur'}
+          ]">
+          <el-input readonly="readonly" v-model="editForm.parent_moduleName" autocomplete="off">
+            <el-button slot="append" @click="innerModifyDialogVisible=true">请选择</el-button>
+          </el-input>
+        </el-form-item>
+         <el-form-item
+          label="父模块ID"
+          label-width="100px"
+          prop="parent_moduleID"
+          :rules="[
+          {required: true, message:'父模块ID不能为空', trigger: 'blur'}
+          ]">
+          <el-input readonly="readonly" v-model="editForm.parent_moduleID" autocomplete="off"></el-input>
+          <el-checkbox v-model="isModifyRoot" @change="setModifyRootNode">根节点</el-checkbox>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="modifyDeptDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="modifyDialogVisible = false">确 定</el-button>
+        <el-button @click="modifyDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="modifyModuleSet">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 删除部门信息对话框采用 MessageBox弹框方式 -->
@@ -128,7 +182,12 @@ export default {
   data () {
     return {
       isRoot: false, // 添加模块时选项，用来判断是否是根节点
+      isModifyRoot: false,
       addForm: {},
+      editForm: {
+        moduleName: '',
+        moduleInfo: ''
+      },
       // 模块设置 模拟数据
       moduleData: [
         {
@@ -180,7 +239,8 @@ export default {
         }],
       addDialogVisible: false, // 添加科室信息窗口控制标识
       innerAddDialogVisible: false, // 添加科室信息内层窗口控制标识
-      modifyDialogVisible: false // 修改科室信息窗口控制标识
+      modifyDialogVisible: false, // 修改科室信息窗口控制标识
+      innerModifyDialogVisible: false // 修改科室信息内层窗口控制标识
     }
   },
   methods: {
@@ -188,6 +248,11 @@ export default {
       this.addForm.parent_moduleName = moduleInfo.label
       this.addForm.parent_moduleID = moduleInfo.moduleID
       this.innerAddDialogVisible = false
+    },
+    addModifySelectNode: function (moduleInfo) {
+      this.editForm.parent_moduleName = moduleInfo.label
+      this.editForm.parent_moduleID = moduleInfo.moduleID
+      this.innerModifyDialogVisible = false
     },
     addModuleSet: function () {
       // todo 先判断在列表中是否存在相同的供应商名称
@@ -224,7 +289,6 @@ export default {
                     message: res.data.msg,
                     type: 'success'
                   })
-                  // console.log(this.$refs)
                   this.$refs['addForm'].resetFields()
                   this.addSupplierDialogVisible = false
                   this.getModuleList()
@@ -252,7 +316,7 @@ export default {
       })
     },
     // 添加模块对话框中的根节点按钮控制
-    setRootNode: function (flag) {
+    setAddRootNode: function (flag) {
       if (flag) {
         this.addForm.parent_moduleID = 0
         this.addForm.parent_moduleName = '根节点'
@@ -261,8 +325,71 @@ export default {
         this.addForm.parent_moduleName = ''
       }
     },
-    append: function (data) {
-
+    // 修改模块对话框中的根节点按钮控制
+    setModifyRootNode: function (flag) {
+      if (flag) {
+        this.editForm.parent_moduleID = 0
+        this.editForm.parent_moduleName = '根节点'
+      } else {
+        this.editForm.parent_moduleID = ''
+        this.editForm.parent_moduleName = ''
+      }
+    },
+    showEditModuleSet: function (node) {
+      this.editForm.moduleName = node.label.split('_')[0]
+      this.editForm.moduleInfo = node.label.split('_')[1]
+      this.editForm.moduleID = node.data.moduleID
+      this.editForm.parent_moduleID = node.data.parent_moduleID
+      if (this.editForm.parent_moduleID === 0) {
+        this.editForm.parent_moduleName = '根节点'
+        this.isModifyRoot = true
+      } else {
+        this.editForm.parent_moduleName = node.parent.label.split('_')[0]
+        this.isModifyRoot = false
+      }
+      this.modifyDialogVisible = true
+    },
+    deleteModuleSet: function (node) {
+      this.$confirm('您确定删除该模块吗(所有子模块都将被删除)?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        axios({
+          method: 'post',
+          url: '/api/moduleSet/deleteModuleSet',
+          data: {
+            moduleID: node.data.moduleID
+          }
+        })
+          .then((res) => {
+            if (res.data.result === 1) {
+              // 成功则关闭窗口，不成功不关闭
+              this.$message({
+                message: res.data.msg,
+                type: 'success'
+              })
+              this.getModuleList()
+            } else {
+              this.$message({
+                message: res.data.msg,
+                type: 'error'
+              })
+            }
+          })
+          .catch((err) => {
+            console.log(err)
+            this.$message({
+              message: '服务器错误！',
+              type: 'error'
+            })
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
     },
     getModuleList: function () {
       axios({
@@ -270,8 +397,6 @@ export default {
         url: '/api/moduleSet/getModuleList'
       })
         .then((res) => {
-          this.supplierData = res.data
-          // console.log(res.data)
           // 获得数据后要筛选整理
           let tempData = res.data.filter(function (item) {
             return item.parent_moduleID === 0
@@ -282,7 +407,6 @@ export default {
             })
           }
           this.moduleData = tempData
-          // console.log(tempData)
         })
         .catch((err) => {
           console.log(err)
@@ -314,6 +438,63 @@ export default {
     },
     handleEdit: function (index, row) {
       this.modifyDialogVisible = true
+    },
+    // 修改模块设置信息
+    modifyModuleSet: function () {
+      // todo 先判断在列表中是否存在相同的供应商名称
+      this.$refs['editForm'].validate((isPass, object) => {
+        if (!isPass) {
+          this.$message({
+            message: '请输入完整信息！',
+            type: 'error'
+          })
+        } else {
+          let flag = true
+          for (let i = 0; i < this.moduleData.length; i++) {
+            if (this.editForm.moduleName === this.moduleData[i].moduleName && this.editForm.moduleID !== this.supplierData[i].moduleID) {
+              flag = false
+              break
+            }
+          }
+          if (flag) {
+            axios({
+              method: 'post',
+              url: '/api/moduleSet/modifyModuleSet',
+              data: {
+                moduleSetInfo: this.editForm
+              }
+            })
+              .then((res) => {
+                if (res.data.result === 1) {
+                  // 成功则关闭窗口，不成功不关闭
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'success'
+                  })
+                  this.modifyDialogVisible = false
+                  this.getModuleList()
+                } else {
+                  this.$message({
+                    message: res.data.msg,
+                    type: 'error'
+                  })
+                }
+              })
+              .catch((err) => {
+                console.log(err)
+                this.$message({
+                  message: '服务器错误！',
+                  type: 'error'
+                })
+              })
+          } else {
+            this.$message({
+              type: 'error',
+              message: '该模块信息已存在!'
+            })
+          }
+        }
+      })
     }
   },
   mounted: function () {
