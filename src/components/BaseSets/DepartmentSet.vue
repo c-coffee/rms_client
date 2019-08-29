@@ -160,7 +160,7 @@ export default {
                     message: res.data.msg,
                     type: 'success'
                   })
-                  this.$refs['addForm'].resetFields()
+                  this.$refs['addDeptForm'].resetFields()
                   this.addDeptDialogVisible = false
                   this.getDeptList()
                 } else {

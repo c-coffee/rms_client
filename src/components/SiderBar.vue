@@ -51,7 +51,7 @@
               <i class="el-icon-collection-tag"></i>
               <span slot="title">角色管理</span>
             </el-menu-item>
-            <el-menu-item index="2.4">
+            <el-menu-item index="/UserManage">
               <i class="el-icon-user"></i>
               <span slot="title">用户管理</span>
             </el-menu-item>
