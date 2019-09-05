@@ -5,7 +5,7 @@
             </header-bar>
         </el-header>
         <el-container>
-            <el-aside width="205px" id="mainSider">
+            <el-aside width="210px" id="mainSider">
               <sider-bar></sider-bar>
             </el-aside>
             <el-main>
@@ -37,9 +37,10 @@ export default {
     background-color: #545c64
   }
   .el-aside {
-    background-color: #E9EBFE;
+    height: 100vh;
+    background-color: #D9ECFF;
   }
   .el-container{
-    background-color: #E9EBFE;
+    background-color: #D9ECFF;
   }
 </style>

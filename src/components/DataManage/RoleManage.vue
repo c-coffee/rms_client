@@ -210,7 +210,8 @@ export default {
           this.originMoudleData = res.data
           for (let m = 0; m < this.originMoudleData.length; m++) {
             // 权限数组初始化
-            this.rankArray[0][m] = this.originMoudleData[m].moduleID
+            // todo 这种获取id和实际界面不一致
+            // this.rankArray[0][m] = this.originMoudleData[m].moduleID
             this.rankArray[1][m] = false
             this.rankArray[2][m] = false
             this.rankArray[3][m] = false
@@ -225,7 +226,18 @@ export default {
               return item.parent_moduleID === tempData[i].moduleID
             })
           }
+          let num = 0
+          for (let m = 0; m < tempData.length; m++) {
+            this.rankArray[0][num] = tempData[m].moduleID
+            num++
+            for (let n = 0; n < tempData[m].children.length; n++) {
+              this.rankArray[0][num] = tempData[m].children[n].moduleID
+              num++
+            }
+          }
           this.moduleData = tempData
+          console.log(this.moduleData)
+          console.log(this.rankArray)
         })
         .catch((err) => {
           console.log(err)
@@ -344,6 +356,7 @@ export default {
       this.modifyDialogVisible = true
     },
     modifyRank: function () {
+      console.log(this.rankArray)
       this.currentRole.roleRank.length = 0
       let accessStr = ''
       for (let i = 0; i < this.rankArray[0].length; i++) {
@@ -362,6 +375,7 @@ export default {
         }
         if (accessStr.length > 0) {
           this.currentRole.roleRank.push([this.currentRole.roleID, this.rankArray[0][i], accessStr])
+          console.log(i, this.rankArray[0][i])
         }
       }
       // 获取了当前角色所选择的权限信息

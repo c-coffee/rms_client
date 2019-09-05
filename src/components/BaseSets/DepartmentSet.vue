@@ -117,6 +117,7 @@ export default {
         url: '/api/department/getDeptList'
       })
         .then((res) => {
+          console.log(res)
           this.deptData = res.data
         })
         .catch((err) => {

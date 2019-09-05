@@ -74,7 +74,7 @@
           </el-table-column>
           <el-table-column
               prop="applicationState"
-              label="当前步骤"
+              label="当前流程"
               align="center"
               :filters="[{text:'待处理',value:1},{text:'待审核',value:2},{text:'审核驳回',value:3},{text:'已受理',value:4}]"
               :filter-method="filterState"
@@ -172,6 +172,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'ReagentApplication',
   data () {
@@ -284,7 +285,26 @@ export default {
     },
     handleEdit: function (index, row) {
       this.modifySupplierDialogVisible = true
+    },
+    getApplicationList () {
+      axios({
+        method: 'get',
+        url: '/api/application/getApplicationList'
+      })
+        .then((res) => {
+          this.userData = res.data
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
     }
+  },
+  mounted: function () {
+    this.getApplicationList()
   }
 }
 </script>
