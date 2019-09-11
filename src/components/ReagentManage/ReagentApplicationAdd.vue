@@ -65,7 +65,7 @@
             <el-col :span="12" style="margin-top:-15px;margin-bottom:10px;">
               <div style="margin-top: 15px;">
                 <el-input placeholder="请输入试剂名称或试剂简码" v-model="searchReagent">
-                  <el-button slot="append" icon="el-icon-search"></el-button>
+                  <el-button slot="append" icon="el-icon-search" @click="searchReagent"></el-button>
                 </el-input>
               </div>
             </el-col>

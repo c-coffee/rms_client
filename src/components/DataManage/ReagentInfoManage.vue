@@ -77,7 +77,7 @@
           <el-table-column
               prop="reagentID"
               label="序号"
-              width="180"
+              width="50"
               align="center">
           </el-table-column>
           <el-table-column
@@ -107,7 +107,7 @@
           </el-table-column>
           <el-table-column
             label="操作"
-            width="250px"
+            width="150px"
             align="center">
               <template slot-scope="scope">
                 <el-button
@@ -124,7 +124,7 @@
         </el-card>
       </el-col>
     </el-row>
-    <!-- 添加部门信息对话框 -->
+    <!-- 添加试剂信息对话框 -->
     <el-dialog
     title="添加试剂信息"
     :visible.sync="addDialogVisible"
@@ -254,15 +254,28 @@
             </el-form-item>
           </el-col>
         </el-row>
+         <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="初始库存"
+            label-width="100px"
+            prop="initialNum"
+            :rules="[
+            {required: true, message:'初始库存不能为空', trigger: 'blur'}
+            ]">
+              <el-input-number v-model="addForm.initialNum" :precision="2" :step="1" :max="10000"></el-input-number>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="addDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addReagentInfo">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 修改部门信息对话框 -->
+    <!-- 修改试剂信息对话框 -->
     <el-dialog
-    title="修改科室信息"
+    title="修改试剂信息"
     :visible.sync="modifyDialogVisible"
     :close-on-click-modal="false"
     width="600px">
@@ -390,6 +403,19 @@
             </el-form-item>
           </el-col>
         </el-row>
+         <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="初始库存"
+            label-width="100px"
+            prop="initialNum"
+            :rules="[
+            {required: true, message:'初始库存不能为空', trigger: 'blur'}
+            ]">
+              <el-input-number v-model="editForm.initialNum" :precision="2" :step="1" :max="10000" @change="changeEditInput"></el-input-number>
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="modifyDialogVisible = false">取 消</el-button>
@@ -408,7 +434,9 @@ export default {
       // 初始试剂信息模拟数据
       reagentInfoData: [],
       addForm: {},
-      editForm: {},
+      editForm: {
+        initialNum: 0
+      },
       reagentDanger: [],
       reagentState: [],
       reagentType: [],
@@ -417,6 +445,10 @@ export default {
     }
   },
   methods: {
+    // 解决初始库存数字款不响应输入的问题，强制更新
+    changeEditInput () {
+      this.$forceUpdate()
+    },
     addReagentInfo () {
       // todo 先判断在列表中是否存在相同的供应商名称
       this.$refs['addForm'].validate((isPass, object) => {
@@ -448,7 +480,6 @@ export default {
                     message: res.data.msg,
                     type: 'success'
                   })
-                  // console.log(this.$refs)
                   this.$refs['addForm'].resetFields()
                   this.addDialogVisible = false
                   this.getReagentInfoList()
@@ -492,6 +523,7 @@ export default {
             }
           }
           if (flag) {
+            console.log(this.editForm)
             axios({
               method: 'post',
               url: '/api/reagentInfo/editReagentinfo',
@@ -667,7 +699,28 @@ export default {
     handleEdit: function (index, row) {
       // 深拷贝
       this.editForm = JSON.parse(JSON.stringify(row))
-      this.modifyDialogVisible = true
+      console.log(this.$refs['addForm'])
+      console.log(this.editForm)
+      axios({
+        method: 'get',
+        url: '/api/reagentInfo/getReagentStock',
+        params: {
+          reagentID: this.editForm.reagentID
+        }
+      })
+        .then((res) => {
+          // console.log(res)
+          this.editForm.initialNum = res.data.initialNum
+          this.modifyDialogVisible = true
+          console.log(this.$refs['editForm'])
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
     }
   },
   mounted: function () {

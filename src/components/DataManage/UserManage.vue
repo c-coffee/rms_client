@@ -15,7 +15,7 @@
           <el-table-column
               prop="userID"
               label="序号"
-              width="80"
+              width="48"
               align="center">
           </el-table-column>
           <el-table-column

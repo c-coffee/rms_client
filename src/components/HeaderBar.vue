@@ -7,7 +7,7 @@
       active-text-color="#ffd04b">
         <el-menu-item index="1"><img src="./../assets/reagent.png" width="30px"> <span style="font-size:16px">&nbsp;试剂管理系统</span></el-menu-item>
         <el-menu-item index="3" style="float:right" title="下次将无法自动登录" @click="logOutPage"><i class="el-icon-switch-button"></i>注销</el-menu-item>
-        <el-menu-item index="4" style="float:right"><i class="el-icon-user-solid"></i>管理员，您好！</el-menu-item>
+        <el-menu-item index="4" style="float:right"><i class="el-icon-user-solid"></i>{{userName}}，您好！</el-menu-item>
     </el-menu>
 </template>
 
@@ -17,7 +17,7 @@ export default {
   name: 'HeaderBar',
   data () {
     return {
-      num: 0
+      userName: ''
     }
   },
   methods: {
@@ -37,14 +37,16 @@ export default {
         })
     },
     checkUserLogin: function () {
-      this.num++
-      console.log(this.num)
+      setTimeout(this.checkUserLogin, 1000 * 60 * 30)
+      // console.log(this.num)
       let userStr = localStorage.getItem('rms_userInfo')
       let userInfo
       if (userStr.length === 0) {
         this.$router.push({path: '/'})
       } else {
         userInfo = JSON.parse(userStr)
+        // console.log(userInfo)
+        this.userName = userInfo.userRealName
       }
       axios({
         method: 'post',
@@ -64,7 +66,7 @@ export default {
   },
   mounted: function () {
     // 30分钟检测一次是否登出
-    setInterval(this.checkUserLogin, 1000 * 60 * 30)
+    this.checkUserLogin()
     // this.checkUserLogin()
   }
 }

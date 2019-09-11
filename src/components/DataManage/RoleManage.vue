@@ -226,6 +226,7 @@ export default {
               return item.parent_moduleID === tempData[i].moduleID
             })
           }
+          // 通过num 控制下标移动
           let num = 0
           for (let m = 0; m < tempData.length; m++) {
             this.rankArray[0][num] = tempData[m].moduleID
@@ -236,8 +237,6 @@ export default {
             }
           }
           this.moduleData = tempData
-          console.log(this.moduleData)
-          console.log(this.rankArray)
         })
         .catch((err) => {
           console.log(err)

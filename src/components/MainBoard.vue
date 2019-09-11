@@ -37,7 +37,7 @@ export default {
     background-color: #545c64
   }
   .el-aside {
-    height: 100vh;
+    height: 90vh;
     background-color: #D9ECFF;
   }
   .el-container{

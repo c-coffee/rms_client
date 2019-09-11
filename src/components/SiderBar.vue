@@ -47,6 +47,10 @@
               <i class="el-icon-folder-add"></i>
               <span slot="title">试剂管理</span>
             </el-menu-item>
+            <el-menu-item index="/ReagentStockManage" v-if="checkRank('ReagentStockManage')">
+              <i class="el-icon-folder-add"></i>
+              <span slot="title">库存管理</span>
+            </el-menu-item>
             <el-menu-item index="/RoleManage" v-if="checkRank('BaseSet')">
               <i class="el-icon-collection-tag"></i>
               <span slot="title">角色管理</span>
