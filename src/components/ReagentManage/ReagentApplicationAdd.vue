@@ -9,13 +9,14 @@
             <el-button @click.stop="reagentAppAdd" style="float: right; padding: 3px 10px" type="text">保存</el-button>
           </div>
           <el-row>
-            <el-col :span="12" style="text-align:center">申领用户：{{reagentAppDetail.userName}}</el-col>
-            <el-col :span="12" style="text-align:center">申领时间：{{reagentAppDetail.appDatetime}}</el-col>
+            <el-col :span="12" style="text-align:center">申领用户：{{appInfo.userName}}</el-col>
+            <el-col :span="12" style="text-align:center">申领时间：{{appInfo.appDatetime}}</el-col>
           </el-row>
           <el-divider></el-divider>
           <el-table
-            :data="reagentAppDetail.appDetail"
-            border>
+            :data="appDetail"
+            border
+            size="mini">
               <el-table-column
                 type="index"
                 label="序号"
@@ -50,7 +51,7 @@
               </el-table-column>
               <el-table-column
             label="操作"
-            width="250px"
+            width="90px"
             align="center">
               <template slot-scope="scope">
                 <el-button
@@ -62,17 +63,43 @@
           </el-table>
           <el-divider></el-divider>
           <el-row>
-            <el-col :span="12" style="margin-top:-15px;margin-bottom:10px;">
-              <div style="margin-top: 15px;">
-                <el-input placeholder="请输入试剂名称或试剂简码" v-model="searchReagent">
-                  <el-button slot="append" icon="el-icon-search" @click="searchReagent"></el-button>
+            <el-col>
+              <div>
+                搜索&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:100px">
+                <el-option
+                  v-for="item in reagentType"
+                  :key="item.typeID"
+                  :label="item.typeName"
+                  :value="item.typeID">
+                </el-option>
+                </el-select>
+                <el-select v-model="searchInfo.searchReagentDangerID" placeholder="危化类别"  size="small" style="width:100px">
+                <el-option
+                  v-for="item in reagentDanger"
+                  :key="item.dangerID"
+                  :label="item.dangerName"
+                  :value="item.dangerID">
+                </el-option>
+              </el-select>
+              <el-select v-model="searchInfo.searchReagentStateID" placeholder="性状类别" size="small" style="width:100px">
+                <el-option
+                  v-for="item in reagentState"
+                  :key="item.stateID"
+                  :label="item.stateName"
+                  :value="item.stateID">
+                </el-option>
+              </el-select>
+                <el-input style="width:250px" placeholder="请输入试剂名称或试剂简码" v-model="searchInfo.searchReagent" size="small">
+                  <el-button slot="append" icon="el-icon-search" @click="getStocksList"></el-button>
                 </el-input>
               </div>
             </el-col>
           </el-row>
+          <el-divider></el-divider>
           <el-table
-            :data="reagentSearchInfoData"
-            border>
+            :data="stockInfoData"
+            border
+            size="mini">
               <el-table-column
                 prop="reagentID"
                 label="序号"
@@ -93,26 +120,33 @@
                 prop="reagentUnit"
                 label="单位"
                 align="center"
+                width="60px">
+              </el-table-column>
+              <el-table-column
+                prop="initialNum"
+                label="库存量"
+                align="center"
                 width="70px">
               </el-table-column>
               <el-table-column
-                prop="reagentNum"
-                label="数量"
+                prop="appNum"
+                label="申领数量"
                 align="center">
                 <template slot-scope="scope">
-                  <el-input-number v-model="scope.row.reagentNum" :min="0" :max="10000" label="订购数量"></el-input-number>
+                  <el-input-number style="width:110px" v-model="scope.row.appNum"  value=0 :precision="2" :step="1" :min="0" :max="10000" @change="changeEditInput" size="mini"></el-input-number>
                 </template>
               </el-table-column>
               <el-table-column
                 label="备注"
-                align="center">
+                align="center"
+                prop="remark">
                 <template slot-scope="scope">
-                  <el-input v-model="scope.remark" placeholder="请输入备注"></el-input>
+                  <el-input v-model="scope.row.remark" placeholder="请输入备注" size="mini" style="width:100px"></el-input>
                 </template>
               </el-table-column>
               <el-table-column
                 label="操作"
-                width="250px"
+                width="90px"
                 align="center">
               <template slot-scope="scope">
                 <el-button
@@ -129,105 +163,110 @@
 </template>
 
 <script>
+import axios from 'axios'
 export default {
   name: 'ReagentApplicationAdd',
   data () {
     return {
       // 通过试剂名称或简码进行搜索
-      searchReagent: '',
-      // 初始试剂信息模拟数据
-      reagentAppDetail: {
-        appID: 1,
-        appUserID: '1',
-        userName: '章三',
-        appDatetime: '2019-6-26',
-        typeName: '有机',
-        reagentStateID: 2,
-        hasDanger: 0,
-        approverID: '',
-        approverDatetime: '',
-        approveReason: '',
-        applicationState: 1,
-        appDetail: [
-          {
-            appDetailID: 1,
-            appID: 1,
-            reagentID: 2,
-            reagentName: '甲醇',
-            reagentUnit: 'L',
-            reagentSpec: '>=99.9%',
-            reagentNum: 10,
-            remark: ''
-          },
-          {
-            appDetailID: 2,
-            appID: 1,
-            reagentID: 3,
-            reagentName: '二苯肼标准溶液',
-            reagentUnit: 'L',
-            reagentSpec: '1000μg/ml',
-            reagentNum: 8,
-            remark: ''
-          }
-        ]
+      searchInfo: {
+        searchReagentTypeID: '',
+        searchReagentDangerID: '',
+        searchReagentStateID: '',
+        searchReagent: ''
       },
-      reagentSearchInfoData: [
+      // 初始试剂信息模拟数据
+      appInfo: {
+        appUserID: '1',
+        userName: 'zhangsan',
+        userRealName: '章三',
+        appDatetime: '2019-6-26',
+        hasDanger: 0
+      },
+      appDetail: [
         {
-          reagentID: 1,
-          reagentName: '硝酸银',
-          reagentTypeID: 1,
-          typeName: '有机',
-          reagentStateID: 2,
-          stateName: '液态',
-          reagentDangerID: '3',
-          dangerName: '易制爆',
-          reagentProduct: '阿拉丁',
-          reagentSpec: '>=99.9%',
-          reagentUnit: 'L',
-          reagentShortCode: 'XSY',
-          reagentNum: 0,
-          remark: ''
-        },
-        {
+          appDetailID: 1,
+          appID: 1,
           reagentID: 2,
-          reagentName: '二苯肼标准溶液',
-          reagentTypeID: 1,
-          typeName: '有机',
-          reagentStateID: 2,
-          stateName: '液态',
-          reagentDangerID: '1',
-          dangerName: '一般',
-          reagentProduct: '阿拉丁',
-          reagentSpec: '1000μg/ml',
+          reagentName: '甲醇',
           reagentUnit: 'L',
-          reagentShortCode: 'EBJ',
-          reagentNum: 0,
+          reagentSpec: '>=99.9%',
+          reagentNum: 10,
           remark: ''
         },
         {
+          appDetailID: 2,
+          appID: 1,
           reagentID: 3,
-          reagentName: '甲醇',
-          reagentTypeID: 1,
-          typeName: '有机',
-          reagentStateID: 2,
-          stateName: '液态',
-          reagentDangerID: '1',
-          dangerName: '一般',
-          reagentProduct: '阿拉丁',
-          reagentSpec: '>=99.9%',
+          reagentName: '二苯肼标准溶液',
           reagentUnit: 'L',
-          reagentShortCode: 'JC',
-          reagentNum: 0,
+          reagentSpec: '1000μg/ml',
+          reagentNum: 8,
           remark: ''
         }
-      ]
+      ],
+      stockInfoData: [],
+      reagentDanger: [],
+      reagentState: [],
+      reagentType: [],
+      currentPage: 1,
+      pageSize: 5,
+      pageCount: 0
     }
   },
   methods: {
+    getBaseInfoList () {
+      axios({
+        method: 'get',
+        url: '/api/reagentInfo/getBaseInfo'
+      })
+        .then((res) => {
+          this.reagentDanger = res.data.reagentDanger
+          this.reagentState = res.data.reagentState
+          this.reagentType = res.data.reagentType
+          this.reagentDanger.unshift({dangerID: 0, dangerName: '全部', state: 1})
+          this.reagentState.unshift({stateID: 0, stateName: '全部', state: 1})
+          this.reagentType.unshift({typeID: 0, typeName: '全部', state: 1})
+          // this.getStocksList()
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
+    changeEditInput () {
+      this.$forceUpdate()
+    },
+    getStocksList: function () {
+      axios({
+        method: 'get',
+        url: '/api/stocks/getStocksList',
+        params: {
+          searchInfo: this.searchInfo,
+          pageInfo: {
+            pageSize: this.pageSize,
+            currentPage: this.currentPage
+          }
+        }
+      })
+        .then((res) => {
+          // console.log(res)
+          this.stockInfoData = res.data.data
+          this.pageCount = res.data.count
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     filterState: function (value, row) {
       return row.applicationState === value
-    },
-    showAddDialog: function () {
     },
     handleDelete: function (index, row) {
       this.$confirm('您确定删除所选试剂吗?', '提示', {
@@ -248,7 +287,17 @@ export default {
       })
     },
     handleEdit: function (index, row) {
+    },
+    handleAdd: function (index, row) {
+      console.log(row.appNum, row.remark)
     }
+  },
+  mounted: function () {
+    let userInfo = this.$store.user.userInfo
+    console.log(userInfo)
+    this.appInfo.userName = userInfo.userName
+    this.appInfo.userRealName = userInfo.userRealName
+    this.getBaseInfoList()
   }
 }
 </script>

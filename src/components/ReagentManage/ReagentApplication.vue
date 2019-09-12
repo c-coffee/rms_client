@@ -11,12 +11,14 @@
           :data="reagentAppDetail"
           style="width: 100%"
           max-height="450"
+          size="mini"
           >
           <el-table-column type="expand">
             <template slot-scope="props">
               <el-table
                 :data="props.row.appDetail"
                 border
+                size="mini"
               >
               <el-table-column
                 prop="appDetailID"
@@ -54,7 +56,7 @@
           <el-table-column
               prop="appID"
               label="序号"
-              width="180"
+              width="50"
               align="center">
           </el-table-column>
           <el-table-column

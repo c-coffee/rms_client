@@ -54,7 +54,7 @@
           <el-table-column
               prop="appID"
               label="序号"
-              width="180"
+              width="50"
               align="center">
           </el-table-column>
           <el-table-column

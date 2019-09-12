@@ -94,6 +94,7 @@ export default {
                   userInfo.autoLogin = false
                 }
                 localStorage.setItem('rms_userInfo', JSON.stringify(userInfo))
+                this.$store.dispatch('setUserInfo', userInfo)
                 this.$router.push({path: '/MainBoard'})
               }
             })

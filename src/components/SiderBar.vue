@@ -51,11 +51,11 @@
               <i class="el-icon-folder-add"></i>
               <span slot="title">库存管理</span>
             </el-menu-item>
-            <el-menu-item index="/RoleManage" v-if="checkRank('BaseSet')">
+            <el-menu-item index="/RoleManage" v-if="checkRank('RoleManage')">
               <i class="el-icon-collection-tag"></i>
               <span slot="title">角色管理</span>
             </el-menu-item>
-            <el-menu-item index="/UserManage" v-if="checkRank('BaseSet')">
+            <el-menu-item index="/UserManage" v-if="checkRank('UserManage')">
               <i class="el-icon-user"></i>
               <span slot="title">用户管理</span>
             </el-menu-item>

@@ -19,9 +19,10 @@ import ReagentApplicationAdd from '@/components/ReagentManage/ReagentApplication
 import ReagentReturnApp from '@/components/ReagentManage/ReagentReturnApp'
 import ReagentExpend from '@/components/ReagentManage/ReagentExpend'
 import DangerApprove from '@/components/ReagentManage/DangerApprove'
-import ApplicationManage from '@/components/ReagentProcess/ApplicationManage'
 import OrderManage from '@/components/ReagentProcess/OrderManage'
 import OrderApprove from '@/components/ReagentProcess/OrderApprove'
+
+import ApplicationManage from '@/components/ReagentProcess/ApplicationManage'
 
 Vue.use(Router)
 

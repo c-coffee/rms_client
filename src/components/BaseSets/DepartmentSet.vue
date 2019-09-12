@@ -11,6 +11,7 @@
           :data="deptData"
           style="width: 100%"
           max-height="450"
+          size="mini"
           >
           <el-table-column
               prop="deptID"
@@ -117,7 +118,7 @@ export default {
         url: '/api/department/getDeptList'
       })
         .then((res) => {
-          console.log(res)
+          // console.log(res)
           this.deptData = res.data
         })
         .catch((err) => {
