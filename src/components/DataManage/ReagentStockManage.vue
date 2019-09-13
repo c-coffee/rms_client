@@ -40,6 +40,7 @@
             </el-col>
           </el-row>
           <el-pagination
+            @current-change="handleCurrentChange"
             layout="prev, pager, next"
             style="float:right"
             :page-size="this.pageSize"
@@ -182,11 +183,15 @@ export default {
       reagentState: [],
       reagentType: [],
       currentPage: 1,
-      pageSize: 8,
+      pageSize: 1,
       pageCount: 0
     }
   },
   methods: {
+    handleCurrentChange (currentPage) {
+      this.currentPage = currentPage
+      this.getStocksList()
+    },
     modifyInitiaNum (index, row) {
       console.log(row)
       axios({

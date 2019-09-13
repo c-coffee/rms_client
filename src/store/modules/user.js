@@ -5,11 +5,14 @@ const User = {
   mutations: {
     setUserInfo (state, userInfo) {
       state.userInfo = userInfo
+      console.log(userInfo)
+      console.log(state.userInfo)
     }
   },
   actions: {
-    setUserInfo ({commit}, userInfo) {
-      commit('setUserInfo', userInfo)
+    setUserInfo (context, userInfo) {
+      console.log(userInfo)
+      context.commit('setUserInfo', userInfo)
     }
   },
   getters: {

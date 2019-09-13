@@ -5,14 +5,9 @@
         <el-card>
           <div slot="header">
             <span>试剂申领</span>
-            <el-button @click.stop="reagentAppAdd" style="float: right; padding: 3px 10px" type="text">保存并提交</el-button>
-            <el-button @click.stop="reagentAppAdd" style="float: right; padding: 3px 10px" type="text">保存</el-button>
+            <el-button @click.stop="appSaveAndSubmit" style="float: right; padding: 3px 10px" type="text">保存并提交</el-button>
+            <el-button @click.stop="appSaveNotSubmit" style="float: right; padding: 3px 10px" type="text">保存</el-button>
           </div>
-          <el-row>
-            <el-col :span="12" style="text-align:center">申领用户：{{appInfo.userName}}</el-col>
-            <el-col :span="12" style="text-align:center">申领时间：{{appInfo.appDatetime}}</el-col>
-          </el-row>
-          <el-divider></el-divider>
           <el-table
             :data="appDetail"
             border
@@ -37,11 +32,17 @@
                 prop="reagentUnit"
                 label="单位"
                 align="center"
+                width="55px">
+              </el-table-column>
+              <el-table-column
+                prop="dangerName"
+                label="易制毒"
+                align="center"
                 width="70px">
               </el-table-column>
               <el-table-column
-                prop="reagentNum"
-                label="数量"
+                prop="appNum"
+                label="申领数量"
                 align="center">
               </el-table-column>
               <el-table-column
@@ -63,7 +64,7 @@
           </el-table>
           <el-divider></el-divider>
           <el-row>
-            <el-col>
+            <el-col :span="18">
               <div>
                 搜索&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:100px">
                 <el-option
@@ -89,10 +90,20 @@
                   :value="item.stateID">
                 </el-option>
               </el-select>
-                <el-input style="width:250px" placeholder="请输入试剂名称或试剂简码" v-model="searchInfo.searchReagent" size="small">
+                <el-input style="width:200px" placeholder="请输入试剂名称或试剂简码" v-model="searchInfo.searchReagent" size="small">
                   <el-button slot="append" icon="el-icon-search" @click="getStocksList"></el-button>
                 </el-input>
               </div>
+            </el-col>
+            <el-col :span="6">
+              <el-pagination
+                @current-change="handleCurrentChange"
+                layout="prev, pager, next"
+                style="float:right"
+                :page-size="this.pageSize"
+                :current-page="this.currentPage"
+                :total="this.pageCount">
+              </el-pagination>
             </el-col>
           </el-row>
           <el-divider></el-divider>
@@ -177,34 +188,10 @@ export default {
       },
       // 初始试剂信息模拟数据
       appInfo: {
-        appUserID: '1',
-        userName: 'zhangsan',
-        userRealName: '章三',
-        appDatetime: '2019-6-26',
+        isSubmit: false,
         hasDanger: 0
       },
-      appDetail: [
-        {
-          appDetailID: 1,
-          appID: 1,
-          reagentID: 2,
-          reagentName: '甲醇',
-          reagentUnit: 'L',
-          reagentSpec: '>=99.9%',
-          reagentNum: 10,
-          remark: ''
-        },
-        {
-          appDetailID: 2,
-          appID: 1,
-          reagentID: 3,
-          reagentName: '二苯肼标准溶液',
-          reagentUnit: 'L',
-          reagentSpec: '1000μg/ml',
-          reagentNum: 8,
-          remark: ''
-        }
-      ],
+      appDetail: [],
       stockInfoData: [],
       reagentDanger: [],
       reagentState: [],
@@ -215,6 +202,64 @@ export default {
     }
   },
   methods: {
+    // 保存并提交申领单
+    appSaveAndSubmit () {
+      this.$confirm('您确定提交申请单吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.appInfo.isSubmit = true
+        this.appSave()
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消提交'
+        })
+      })
+    },
+    // 保存申领单不提交
+    appSaveNotSubmit () {
+      this.appInfo.isSubmit = false
+      this.appSave()
+    },
+    // 保存申领单
+    appSave () {
+      // 先判断appDetail中是否有内容,其次判断是否包含易制毒试剂
+      for (let i = 0; i < this.appDetail.length; i++) {
+        if (this.appDetail[i].reagentDangerID !== 1) {
+          this.appInfo.hasDanger = true
+          break
+        }
+      }
+      axios({
+        method: 'post',
+        url: '/api/application/appSave',
+        data: {
+          appDetail: this.appDetail,
+          appInfo: this.appInfo
+        }
+      })
+        .then((res) => {
+          if (res.data.result === 1) {
+            // 如果成功，则跳转到申请单列表界面
+            this.$message({
+              message: res.data.msg,
+              type: 'success'
+            })
+            this.$router.push({path: '/ReagentApplication'})
+          } else {
+            this.$message({
+              message: res.data.msg,
+              type: 'error'
+            })
+          }
+        })
+    },
+    handleCurrentChange (currentPage) {
+      this.currentPage = currentPage
+      this.getStocksList()
+    },
     getBaseInfoList () {
       axios({
         method: 'get',
@@ -274,7 +319,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.reagentAppDetail.appDetail.splice(index, 1)
+        this.appDetail.splice(index, 1)
         this.$message({
           type: 'success',
           message: '删除成功!'
@@ -289,14 +334,32 @@ export default {
     handleEdit: function (index, row) {
     },
     handleAdd: function (index, row) {
-      console.log(row.appNum, row.remark)
+      // console.log(row.appNum, row.remark)
+      console.log(row)
+      if (row.appNum === 0 || isNaN(row.appNum)) {
+        // 提示请输入有效申购数量
+        this.$message({
+          type: 'error',
+          message: '请输入有效申购数量!'
+        })
+      } else {
+        this.appDetail.push({
+          reagentID: row.reagentID,
+          reagentName: row.reagentName,
+          reagentUnit: row.reagentUnit,
+          reagentSpec: row.reagentSpec,
+          appNum: row.appNum,
+          reagentDangerID: row.reagentDangerID,
+          dangerName: row.dangerName,
+          remark: row.remark
+        })
+      }
     }
   },
   mounted: function () {
-    let userInfo = this.$store.user.userInfo
-    console.log(userInfo)
-    this.appInfo.userName = userInfo.userName
-    this.appInfo.userRealName = userInfo.userRealName
+    // let userInfo = this.$store.state.user.userInfo
+    // this.appInfo.userName = userInfo.userName
+    // this.appInfo.userRealName = userInfo.userRealName
     this.getBaseInfoList()
   }
 }
