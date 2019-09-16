@@ -12,17 +12,22 @@
           style="width: 100%"
           max-height="450"
           size="mini"
+          row-key="appID"
+          lazy
+          @expand-change="loadDetail"
+          :expand-row-keys="expands"
           >
           <el-table-column type="expand">
             <template slot-scope="props">
               <el-table
-                :data="props.row.appDetail"
+                :data="reagentList"
                 border
                 size="mini"
               >
               <el-table-column
-                prop="appDetailID"
+                prop="appDetialID"
                 label="序号"
+                width="50px"
                 align="center">
               </el-table-column>
               <el-table-column
@@ -60,44 +65,51 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="userName"
-              label="申请人"
-              align="center">
-          </el-table-column>
-          <el-table-column
-              prop="appDatetime"
+              prop="appDate"
               label="申请时间"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="hasDanger"
+              prop="dangerInfo"
               label="是否有危化"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="applicationState"
+              prop="approverName"
+              label="审核人"
+              align="center">
+          </el-table-column>
+          <el-table-column
+              prop="approveReason"
+              label="驳回原因"
+              align="center">
+          </el-table-column>
+          <el-table-column
+              prop="stepName"
               label="当前流程"
-              align="center"
-              :filters="[{text:'待处理',value:1},{text:'待审核',value:2},{text:'审核驳回',value:3},{text:'已受理',value:4}]"
+              :filters="[{text:'待提交',value:'待提交'},{text:'待审核',value:'待审核'},{text:'已驳回',value:'已驳回'},{text:'待受理',value:'待受理'}]"
               :filter-method="filterState"
               >
           </el-table-column>
           <el-table-column
             label="操作"
-            width="250px"
+            width="220px"
             align="center">
               <template slot-scope="scope">
                 <el-button
                 size="mini"
                 type="info"
+                :disabled="buttonChk(scope.row)"
                 @click="handleEdit(scope.$index, scope.row)">修改</el-button>
                 <el-button
                 size="mini"
                 type="danger"
+                :disabled="buttonChk(scope.row)"
                 @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                 <el-button
                 size="mini"
                 type="primary"
+                :disabled="buttonChk(scope.row)"
                 @click="handleSubmit(scope.$index, scope.row)">提交</el-button>
               </template>
             </el-table-column>
@@ -105,71 +117,6 @@
         </el-card>
       </el-col>
     </el-row>
-    <!-- 添加部门信息对话框 -->
-    <el-dialog
-    title="添加供应商信息"
-    :visible.sync="addSupplierDialogVisible"
-    width="600px">
-      <el-form :model="addForm" style="margin-right:30px">
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="名称" label-width="100px">
-              <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="等级" label-width="100px">
-              <el-select v-model="value" placeholder="请选择">
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="联系人" label-width="100px">
-              <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="联系电话" label-width="100px">
-              <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-form-item label="地址" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="备注" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="addSupplierDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addSupplierDialogVisible = false">确 定</el-button>
-      </div>
-    </el-dialog>
-    <!-- 修改部门信息对话框 -->
-    <el-dialog
-    title="修改科室信息"
-    :visible.sync="modifySupplierDialogVisible"
-    width="350px">
-      <el-form :model="addForm">
-        <el-form-item label="科室名称" label-width="100px">
-          <el-input v-model="addForm.deptName" autocomplete="off"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="modifyDeptDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="modifyDeptDialogVisible = false">确 定</el-button>
-      </div>
-    </el-dialog>
-    <!-- 删除部门信息对话框采用 MessageBox弹框方式 -->
   </div>
 </template>
 
@@ -252,18 +199,49 @@ export default {
           ]
         }
       ],
-      // 添加科室信息表单对应对象
-      addForm: {
-        deptName: ''
-      },
-      addSupplierDialogVisible: false, // 添加科室信息窗口控制标识
-      modifySupplierDialogVisible: false, // 修改科室信息窗口控制标识
-      deleteSupplierDialogVisible: true // 添加科室信息窗口控制标识
+      reagentList: [],
+      expands: [] // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
     }
   },
   methods: {
+    buttonChk: function (row) {
+      if (row.stepName === '待提交' || row.stepName === '已驳回') {
+        return false
+      } else {
+        return true
+      }
+    },
+    loadDetail: function (row, expandedRows) {
+      let that = this
+      if (expandedRows.length) {
+        that.expands = []
+        if (row) {
+          that.expands.push(row.appID)
+        }
+      } else {
+        that.expands = []
+      }
+      axios({
+        method: 'get',
+        url: '/api/application/getAppReagentList',
+        params: {
+          appID: row.appID
+        }
+      })
+        .then((res) => {
+          this.reagentList = res.data
+          // console.log(res)
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     filterState: function (value, row) {
-      return row.applicationState === value
+      return row.stepName === value
     },
     showAddDialog: function () {
       this.addSupplierDialogVisible = true
@@ -288,13 +266,45 @@ export default {
     handleEdit: function (index, row) {
       this.modifySupplierDialogVisible = true
     },
+    handleSubmit: function (index, row) {
+      axios({
+        method: 'post',
+        url: '/api/application/submitApp',
+        data: {
+          appId: row.appID,
+          hasDanger: row.hasDanger
+        }
+      })
+        .then((res) => {
+          console.log(res)
+          if (res.data.result === 1) {
+            this.getApplicationList()
+            this.$message({
+              message: res.data.msg,
+              type: 'success'
+            })
+          } else {
+            this.$message({
+              message: res.data.msg,
+              type: 'error'
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     getApplicationList () {
       axios({
         method: 'get',
         url: '/api/application/getApplicationList'
       })
         .then((res) => {
-          this.userData = res.data
+          this.reagentAppDetail = res.data
         })
         .catch((err) => {
           console.log(err)

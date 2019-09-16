@@ -8,23 +8,23 @@
                     <el-col :span="16" style="text-align:left"><p class="loginTitle">试剂管理系统</p></el-col>
                 </el-row>
             </div>
-            <el-form ref="loginForm" :model="loginForm" label-position="left">
+            <el-form ref="loginForm" :model="loginForm" label-position="left" @submit.native.prevent>
                 <el-form-item
                   prop="userName"
                   :rules="[{required: true, message:'用户名不能为空', trigger: 'blur'}]"
                 >
-                    <el-input autofocus prefix-icon="el-icon-user" v-model="loginForm.userName" placeholder="用户名"></el-input>
+                    <el-input autofocus prefix-icon="el-icon-user" v-model="loginForm.userName" @keyup.enter.native="submitForm" placeholder="用户名"></el-input>
                 </el-form-item>
                 <el-form-item
                   prop="userPwd"
                   :rules="[{required: true, message:'密码不能为空', trigger: 'blur'}]"
                 >
-                    <el-input maxlength="8" prefix-icon="el-icon-menu" v-model="loginForm.userPwd" show-password placeholder="密码"></el-input>
+                    <el-input maxlength="8" prefix-icon="el-icon-menu" @keyup.enter.native="submitForm" v-model="loginForm.userPwd" show-password placeholder="密码"></el-input>
                 </el-form-item>
             </el-form>
             <div class="bottom clearfix" style="text-align:center">
                 <el-checkbox label="7天自动登录" v-model="autoLogin" style="float:left"></el-checkbox>
-                <el-button type="primary" size="small" style="float:right" plain @click="submitForm">登录</el-button>
+                <el-button type="primary" size="small" style="float:right" plain native-type="submit" @click="submitForm">登录</el-button>
                 <el-button type="text" size="small" style="float:right;margin-right:10px" @click="resetForm">重置</el-button>
             </div>
         </el-card>
