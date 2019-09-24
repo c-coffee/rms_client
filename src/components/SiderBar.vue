@@ -67,7 +67,13 @@
             </template>
             <el-menu-item index="/ReagentApplication" v-if="checkRank('BaseSet')">
                 <i class="el-icon-folder-add"></i>
-                <span slot="title">试剂申领</span>
+                <span slot="title">试剂申请</span>
+            </el-menu-item>
+            <el-menu-item index="/ReagentReceive" v-if="checkRank('BaseSet')">
+                <i class="el-icon-folder-add"></i>
+                <span slot="title">试剂领取</span>
+                <el-badge :value="1" style="float:right" type="primary">
+                </el-badge>
             </el-menu-item>
             <el-menu-item index="/ReagentReturnApp" v-if="checkRank('BaseSet')">
                 <i class="el-icon-folder-remove"></i>
@@ -78,8 +84,10 @@
                 <span slot="title">试剂消耗</span>
             </el-menu-item>
             <el-menu-item index="/DangerApprove" v-if="checkRank('BaseSet')">
-                <i class="el-icon-warning-outline"></i>
-                <span slot="title">危化审核</span>
+                 <i class="el-icon-warning-outline"></i>
+                  <span slot="title">危化审核</span>
+                  <el-badge :value="6" style="float:right" type="primary">
+                  </el-badge>
             </el-menu-item>
         </el-submenu>
         <el-submenu index="5">

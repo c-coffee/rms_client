@@ -4,11 +4,11 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>危化审核</span>
-            <el-button style="float: right; padding: 3px 0" type="text"><router-link to="/ReagentApplicationAdd" tag="span">添加</router-link></el-button>
+            <span>试剂采购管理</span>
+            <el-button style="float: right; padding: 3px 0" type="text"><router-link to="/ReagentApplicationAdd" tag="span">新建采购</router-link></el-button>
           </div>
           <el-table
-          :data="reagentAppDetail"
+          :data="reagentOrder"
           style="width: 100%"
           max-height="450"
           >
@@ -21,7 +21,8 @@
               <el-table-column
                 prop="appDetailID"
                 label="序号"
-                align="center">
+                align="center"
+                width="50px">
               </el-table-column>
               <el-table-column
                 prop="reagentName"
@@ -31,7 +32,8 @@
               <el-table-column
                 prop="reagentUnit"
                 label="单位"
-                align="center">
+                align="center"
+                width="50px">
               </el-table-column>
               <el-table-column
                 prop="reagentSpec"
@@ -41,7 +43,8 @@
               <el-table-column
                 prop="reagentNum"
                 label="数量"
-                align="center">
+                align="center"
+                width="80px">
               </el-table-column>
               <el-table-column
                 prop="remark"
@@ -76,23 +79,27 @@
               prop="applicationState"
               label="当前步骤"
               align="center"
-              :filters="[{text:'待审核',value:2},{text:'审核驳回',value:3}]"
+              :filters="[{text:'待处理',value:1},{text:'待审核',value:2},{text:'审核驳回',value:3},{text:'已受理',value:4}]"
               :filter-method="filterState"
               >
           </el-table-column>
           <el-table-column
             label="操作"
-            width="250px"
+            width="300px"
             align="center">
               <template slot-scope="scope">
                 <el-button
                 size="mini"
-                type="info"
-                @click="handleReject(scope.$index, scope.row)">驳回申请</el-button>
+                type="success"
+                @click="handleEdit(scope.$index, scope.row)">采购管理</el-button>
                 <el-button
                 size="mini"
-                type="success"
-                @click="handleApprove(scope.$index, scope.row)">通过审核</el-button>
+                type="primary"
+                @click="handleEdit(scope.$index, scope.row)">提交审核</el-button>
+                <el-button
+                size="mini"
+                type="danger"
+                @click="handleDelete(scope.$index, scope.row)">驳回</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -104,11 +111,11 @@
 
 <script>
 export default {
-  name: 'DangerApprove',
+  name: 'OrderManage',
   data () {
     return {
       // 初始试剂信息模拟数据
-      reagentAppDetail: [
+      reagentOrder: [
         {
           appID: 1,
           appUserID: '1',
@@ -151,7 +158,7 @@ export default {
           userName: '小昭',
           typeName: '有机',
           reagentStateID: 2,
-          hasDanger: 1,
+          hasDanger: 0,
           approverID: '',
           approverDatetime: '',
           approveReason: '',
@@ -189,24 +196,24 @@ export default {
     showAddDialog: function () {
       this.addSupplierDialogVisible = true
     },
-    handleApprove: function (index, row) {
-      this.$confirm('您确定审核通过该申请吗?', '提示', {
+    handleDelete: function (index, row) {
+      this.$confirm('您确定删除科室信息吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         this.$message({
           type: 'success',
-          message: '审核成功!'
+          message: '删除成功!'
         })
       }).catch(() => {
         this.$message({
           type: 'info',
-          message: '已取消审核'
+          message: '已取消删除'
         })
       })
     },
-    handleReject: function (index, row) {
+    handleEdit: function (index, row) {
       this.modifySupplierDialogVisible = true
     }
   }

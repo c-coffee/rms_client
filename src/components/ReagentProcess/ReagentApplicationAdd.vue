@@ -41,7 +41,7 @@
                 width="70px">
               </el-table-column>
               <el-table-column
-                prop="appNum"
+                prop="reagentNum"
                 label="申领数量"
                 align="center">
               </el-table-column>
@@ -188,8 +188,9 @@ export default {
       },
       // 初始试剂信息模拟数据
       appInfo: {
+        appID: 0,
         isSubmit: false,
-        hasDanger: 0
+        hasDanger: false
       },
       appDetail: [],
       stockInfoData: [],
@@ -202,9 +203,39 @@ export default {
     }
   },
   methods: {
+    // 界面初始化
+    // 如果是由申请单管理页面点击修改调整过来，则读取申请单信息，初始化界面
+    // 如果是点击添加按钮跳转过来，则直接初始化
+    initAppInfo () {
+      let appID = this.$route.query.appID
+      if (typeof (appID) === 'undefined') {
+        // 添加，初始数据项
+      } else {
+        console.log(appID)
+        this.appInfo.appID = appID
+        axios({
+          method: 'get',
+          url: '/api/application/getAppReagentList',
+          params: {
+            appID: appID
+          }
+        })
+          .then((res) => {
+            this.appDetail = res.data
+            // console.log(res)
+          })
+          .catch((err) => {
+            console.log(err)
+            this.$message({
+              message: '服务器错误！',
+              type: 'error'
+            })
+          })
+      }
+    },
     // 保存并提交申领单
     appSaveAndSubmit () {
-      this.$confirm('您确定提交申请单吗?', '提示', {
+      this.$confirm('您确定提交申请单吗?  (提交之后无法修改)', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -226,15 +257,31 @@ export default {
     // 保存申领单
     appSave () {
       // 先判断appDetail中是否有内容,其次判断是否包含易制毒试剂
+      if (this.appDetail.length === 0) {
+        this.$message({
+          message: '请选择要申领的试剂！',
+          type: 'info'
+        })
+        return
+      }
+
       for (let i = 0; i < this.appDetail.length; i++) {
         if (this.appDetail[i].reagentDangerID !== 1) {
+          console.log('0999999999998888888888')
           this.appInfo.hasDanger = true
           break
         }
       }
+      console.log(this.appDetail, this.appInfo.hasDanger)
+      let urlAddr
+      if (this.appInfo.appID === 0) {
+        urlAddr = '/api/application/appSave'
+      } else {
+        urlAddr = '/api/application/appModify'
+      }
       axios({
         method: 'post',
-        url: '/api/application/appSave',
+        url: urlAddr,
         data: {
           appDetail: this.appDetail,
           appInfo: this.appInfo
@@ -343,16 +390,28 @@ export default {
           message: '请输入有效申购数量!'
         })
       } else {
-        this.appDetail.push({
-          reagentID: row.reagentID,
-          reagentName: row.reagentName,
-          reagentUnit: row.reagentUnit,
-          reagentSpec: row.reagentSpec,
-          appNum: row.appNum,
-          reagentDangerID: row.reagentDangerID,
-          dangerName: row.dangerName,
-          remark: row.remark
-        })
+        // 需要判断是否已经添加了该试剂，如果是，则将数量相加
+        let flag = true
+        for (let reagent of this.appDetail) {
+          if (reagent.reagentID === row.reagentID) {
+            reagent.reagentNum += row.appNum
+            reagent.remark = row.remark
+            flag = false
+          }
+        }
+
+        if (flag) {
+          this.appDetail.push({
+            reagentID: row.reagentID,
+            reagentName: row.reagentName,
+            reagentUnit: row.reagentUnit,
+            reagentSpec: row.reagentSpec,
+            reagentNum: row.appNum,
+            reagentDangerID: row.reagentDangerID,
+            dangerName: row.dangerName,
+            remark: row.remark
+          })
+        }
       }
     }
   },
@@ -360,6 +419,7 @@ export default {
     // let userInfo = this.$store.state.user.userInfo
     // this.appInfo.userName = userInfo.userName
     // this.appInfo.userRealName = userInfo.userRealName
+    this.initAppInfo()
     this.getBaseInfoList()
   }
 }

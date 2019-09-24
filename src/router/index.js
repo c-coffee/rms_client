@@ -14,15 +14,16 @@ import ReagentStockManage from '@/components/DataManage/ReagentStockManage'
 import RoleManage from '@/components/DataManage/RoleManage'
 import UserManage from '@/components/DataManage/UserManage'
 
-import ReagentApplication from '@/components/ReagentManage/ReagentApplication'
-import ReagentApplicationAdd from '@/components/ReagentManage/ReagentApplicationAdd'
-import ReagentReturnApp from '@/components/ReagentManage/ReagentReturnApp'
-import ReagentExpend from '@/components/ReagentManage/ReagentExpend'
-import DangerApprove from '@/components/ReagentManage/DangerApprove'
-import OrderManage from '@/components/ReagentProcess/OrderManage'
-import OrderApprove from '@/components/ReagentProcess/OrderApprove'
+import ReagentApplication from '@/components/ReagentProcess/ReagentApplication'
+import ReagentApplicationAdd from '@/components/ReagentProcess/ReagentApplicationAdd'
+import ReagentReceive from '@/components/ReagentProcess/ReagentReceive.vue'
+import ReagentReturnApp from '@/components/ReagentProcess/ReagentReturnApp'
+import ReagentExpend from '@/components/ReagentProcess/ReagentExpend'
+import DangerApprove from '@/components/ReagentProcess/DangerApprove'
 
-import ApplicationManage from '@/components/ReagentProcess/ApplicationManage'
+import OrderManage from '@/components/ReagentManage/OrderManage'
+import OrderApprove from '@/components/ReagentManage/OrderApprove'
+import ApplicationManage from '@/components/ReagentManage/ApplicationManage'
 
 Vue.use(Router)
 
@@ -85,6 +86,10 @@ export default new Router({
         {
           path: '/ReagentApplicationAdd',
           component: ReagentApplicationAdd
+        },
+        {
+          path: '/ReagentReceive',
+          component: ReagentReceive
         },
         {
           path: '/ReagentReturnApp',

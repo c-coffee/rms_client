@@ -4,31 +4,25 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>试剂申领管理</span>
-            <el-button style="float: right; padding: 3px 0" type="text"><router-link to="/ReagentApplicationAdd" tag="span">添加</router-link></el-button>
+            <span>试剂采购管理</span>
+            <el-button style="float: right; padding: 3px 0" type="text"><router-link to="/ReagentApplicationAdd" tag="span">新建采购</router-link></el-button>
           </div>
           <el-table
-          :data="reagentAppDetail"
+          :data="reagentOrder"
           style="width: 100%"
           max-height="450"
-          size="mini"
-          row-key="appID"
-          lazy
-          @expand-change="loadDetail"
-          :expand-row-keys="expands"
           >
           <el-table-column type="expand">
             <template slot-scope="props">
               <el-table
-                :data="reagentList"
+                :data="props.row.appDetail"
                 border
-                size="mini"
               >
               <el-table-column
-                prop="appDetialID"
+                prop="appDetailID"
                 label="序号"
-                width="50px"
-                align="center">
+                align="center"
+                width="50px">
               </el-table-column>
               <el-table-column
                 prop="reagentName"
@@ -38,7 +32,8 @@
               <el-table-column
                 prop="reagentUnit"
                 label="单位"
-                align="center">
+                align="center"
+                width="50px">
               </el-table-column>
               <el-table-column
                 prop="reagentSpec"
@@ -48,7 +43,8 @@
               <el-table-column
                 prop="reagentNum"
                 label="数量"
-                align="center">
+                align="center"
+                width="80px">
               </el-table-column>
               <el-table-column
                 prop="remark"
@@ -61,56 +57,49 @@
           <el-table-column
               prop="appID"
               label="序号"
-              width="50"
+              width="180"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="appDate"
+              prop="userName"
+              label="申请人"
+              align="center">
+          </el-table-column>
+          <el-table-column
+              prop="appDatetime"
               label="申请时间"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="dangerInfo"
+              prop="hasDanger"
               label="是否有危化"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="approverName"
-              label="审核人"
-              align="center">
-          </el-table-column>
-          <el-table-column
-              prop="approveReason"
-              label="驳回原因"
-              align="center">
-          </el-table-column>
-          <el-table-column
-              prop="stepName"
-              label="当前流程"
-              :filters="[{text:'待提交',value:'待提交'},{text:'待审核',value:'待审核'},{text:'已驳回',value:'已驳回'},{text:'待受理',value:'待受理'}]"
+              prop="applicationState"
+              label="当前步骤"
+              align="center"
+              :filters="[{text:'待处理',value:1},{text:'待审核',value:2},{text:'审核驳回',value:3},{text:'已受理',value:4}]"
               :filter-method="filterState"
               >
           </el-table-column>
           <el-table-column
             label="操作"
-            width="220px"
+            width="300px"
             align="center">
               <template slot-scope="scope">
                 <el-button
                 size="mini"
-                type="info"
-                :disabled="buttonChk(scope.row)"
-                @click="handleEdit(scope.$index, scope.row)">修改</el-button>
-                <el-button
-                size="mini"
-                type="danger"
-                :disabled="buttonChk(scope.row)"
-                @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                type="success"
+                @click="handleEdit(scope.$index, scope.row)">采购管理</el-button>
                 <el-button
                 size="mini"
                 type="primary"
-                :disabled="buttonChk(scope.row)"
-                @click="handleSubmit(scope.$index, scope.row)">提交</el-button>
+                @click="handleEdit(scope.$index, scope.row)">提交审核</el-button>
+                <el-button
+                size="mini"
+                type="danger"
+                @click="handleDelete(scope.$index, scope.row)">驳回</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -121,13 +110,12 @@
 </template>
 
 <script>
-import axios from 'axios'
 export default {
-  name: 'ReagentApplication',
+  name: 'OrderApprove',
   data () {
     return {
       // 初始试剂信息模拟数据
-      reagentAppDetail: [
+      reagentOrder: [
         {
           appID: 1,
           appUserID: '1',
@@ -198,50 +186,12 @@ export default {
             }
           ]
         }
-      ],
-      reagentList: [],
-      expands: [] // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
+      ]
     }
   },
   methods: {
-    buttonChk: function (row) {
-      if (row.stepName === '待提交' || row.stepName === '已驳回') {
-        return false
-      } else {
-        return true
-      }
-    },
-    loadDetail: function (row, expandedRows) {
-      let that = this
-      if (expandedRows.length) {
-        that.expands = []
-        if (row) {
-          that.expands.push(row.appID)
-        }
-      } else {
-        that.expands = []
-      }
-      axios({
-        method: 'get',
-        url: '/api/application/getAppReagentList',
-        params: {
-          appID: row.appID
-        }
-      })
-        .then((res) => {
-          this.reagentList = res.data
-          // console.log(res)
-        })
-        .catch((err) => {
-          console.log(err)
-          this.$message({
-            message: '服务器错误！',
-            type: 'error'
-          })
-        })
-    },
     filterState: function (value, row) {
-      return row.stepName === value
+      return row.applicationState === value
     },
     showAddDialog: function () {
       this.addSupplierDialogVisible = true
@@ -265,58 +215,7 @@ export default {
     },
     handleEdit: function (index, row) {
       this.modifySupplierDialogVisible = true
-    },
-    handleSubmit: function (index, row) {
-      axios({
-        method: 'post',
-        url: '/api/application/submitApp',
-        data: {
-          appId: row.appID,
-          hasDanger: row.hasDanger
-        }
-      })
-        .then((res) => {
-          console.log(res)
-          if (res.data.result === 1) {
-            this.getApplicationList()
-            this.$message({
-              message: res.data.msg,
-              type: 'success'
-            })
-          } else {
-            this.$message({
-              message: res.data.msg,
-              type: 'error'
-            })
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-          this.$message({
-            message: '服务器错误！',
-            type: 'error'
-          })
-        })
-    },
-    getApplicationList () {
-      axios({
-        method: 'get',
-        url: '/api/application/getApplicationList'
-      })
-        .then((res) => {
-          this.reagentAppDetail = res.data
-        })
-        .catch((err) => {
-          console.log(err)
-          this.$message({
-            message: '服务器错误！',
-            type: 'error'
-          })
-        })
     }
-  },
-  mounted: function () {
-    this.getApplicationList()
   }
 }
 </script>
