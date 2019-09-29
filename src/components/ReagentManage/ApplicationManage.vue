@@ -22,6 +22,7 @@
                 :data="reagentList"
                 border
                 size="mini"
+                :row-class-name="checkStock"
               >
               <el-table-column
                 prop="appDetialID"
@@ -50,6 +51,11 @@
                 align="center">
               </el-table-column>
               <el-table-column
+                prop="stockNum"
+                label="库存"
+                align="center">
+              </el-table-column>
+              <el-table-column
                 prop="remark"
                 label="备注"
                 align="center">
@@ -61,6 +67,11 @@
               prop="appID"
               label="单号"
               width="50"
+              align="center">
+          </el-table-column>
+          <el-table-column
+              prop="userRealName"
+              label="申请人"
               align="center">
           </el-table-column>
           <el-table-column
@@ -79,11 +90,6 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="approveReason"
-              label="驳回原因"
-              align="center">
-          </el-table-column>
-          <el-table-column
               prop="stepName"
               label="当前流程"
               :filters="[{text:'待提交',value:'待提交'},{text:'待审核',value:'待审核'},{text:'已驳回',value:'已驳回'},{text:'待受理',value:'待受理'}]"
@@ -92,14 +98,14 @@
           </el-table-column>
           <el-table-column
             label="操作"
-            width="220px"
+            width="170px"
             align="center">
               <template slot-scope="scope">
                 <el-button
                 size="mini"
                 type="primary"
                 :disabled="buttonChk(scope.row)"
-                @click="handleEdit(scope.$index, scope.row)">发放</el-button>
+                @click="handleProvide(scope.$index, scope.row)">发放</el-button>
                 <el-button
                 size="mini"
                 type="success"
@@ -127,6 +133,16 @@ export default {
     }
   },
   methods: {
+    // 设置行的背景色
+    checkStock: function (rowInfo) {
+      // return 'lackStock'
+      // console.log(rowInfo.row.stockNum, rowInfo.row.reagentNum)
+      if (rowInfo.row.stockNum < rowInfo.row.reagentNum) {
+        return 'lackStock'
+      } else {
+        return ''
+      }
+    },
     // 用以判断按钮的禁用状态
     buttonChk: function (row) {
       return false
@@ -210,9 +226,9 @@ export default {
         })
       })
     },
-    handleEdit: function (index, row) {
+    handleProvide: function (index, row) {
       // 路由跳转带参数
-      this.$router.push({path: '/ReagentApplicationAdd', query: {appID: row.appID}})
+      this.$router.push({path: '/ProvideReagent', query: {appID: row.appID}})
     },
     getApplicationList () {
       axios({
@@ -237,7 +253,10 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+  .el-table .lackStock{
+    background: oldlace
+  }
   .supplierDetail .el-row{
     margin-bottom: 10px;
   }

@@ -24,6 +24,7 @@ import DangerApprove from '@/components/ReagentProcess/DangerApprove'
 import OrderManage from '@/components/ReagentManage/OrderManage'
 import OrderApprove from '@/components/ReagentManage/OrderApprove'
 import ApplicationManage from '@/components/ReagentManage/ApplicationManage'
+import ProvideReagent from '@/components/ReagentManage/ProvideReagent'
 
 Vue.use(Router)
 
@@ -102,6 +103,10 @@ export default new Router({
         {
           path: '/DangerApprove',
           component: DangerApprove
+        },
+        {
+          path: '/ProvideReagent',
+          component: ProvideReagent
         },
         {
           path: '/ApplicationManage',
