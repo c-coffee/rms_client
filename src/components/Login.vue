@@ -100,6 +100,7 @@ export default {
             })
             .catch((err) => {
               console.log(err)
+              this.loginForm.userPwd = ''
               this.$message({
                 message: '服务器错误！',
                 type: 'error'

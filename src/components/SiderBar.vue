@@ -25,6 +25,10 @@
               <i class="el-icon-money"></i>
               <span slot="title">性状设置</span>
             </el-menu-item>
+            <el-menu-item index="/PuritySet" v-if="checkRank('PuritySet')">
+              <i class="el-icon-money"></i>
+              <span slot="title">纯度设置</span>
+            </el-menu-item>
             <el-menu-item index="/DangerTypeSet" v-if="checkRank('DangerTypeSet')">
               <i class="el-icon-warning-outline"></i>
               <span slot="title">危化类别</span>

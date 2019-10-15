@@ -4,23 +4,24 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>危化类型设置</span>
+            <span>纯度设置</span>
             <el-button @click.stop="showAddDialog" style="float: right; padding: 3px 0" type="text">添加</el-button>
           </div>
           <el-table
-          :data="dangerTypeData"
+          :data="purityData"
           style="width: 100%"
           max-height="450"
+          size="mini"
           >
           <el-table-column
-              prop="dangerID"
+              prop="purityID"
               label="序号"
               width="180"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="dangerName"
-              label="危化类型"
+              prop="purityName"
+              label="纯度"
               align="center">
           </el-table-column>
           <el-table-column
@@ -42,47 +43,47 @@
         </el-card>
       </el-col>
     </el-row>
-    <!-- 添加危化类型对话框 -->
+    <!-- 添加纯度对话框 -->
     <el-dialog
-    title="添加危化类型"
-    :visible.sync="addDangerTypeDialogVisible"
+    title="添加纯度信息"
+    :visible.sync="addDialogVisible"
     width="350px">
       <el-form :model="addForm" ref="addForm">
         <el-form-item
-        label="危化类型"
+        label="纯度信息"
         label-width="100px"
         :rules="[
-            {required: true, message:'危化类型不能为空', trigger: 'blur'}
+            {required: true, message:'纯度信息不能为空', trigger: 'blur'}
           ]"
-        prop="dangerName">
-          <el-input v-model="addForm.dangerName" autocomplete="off"></el-input>
+        prop="purityName">
+          <el-input v-model="addForm.purityName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="addDangerTypeDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addDangerType">确 定</el-button>
+        <el-button @click="addDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addPurityInfo">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 修改危化类型对话框 -->
+    <!-- 修改纯度信息对话框 -->
     <el-dialog
-    title="修改危化类型"
+    title="修改纯度信息"
     :close-on-click-modal="false"
-    :visible.sync="modifyDangerTypeDialogVisible"
+    :visible.sync="modifyDialogVisible"
     width="350px">
       <el-form :model="editForm" ref="editForm">
         <el-form-item
-        label="危化类型"
+        label="纯度信息"
         label-width="100px"
-        prop="dangerName"
+        prop="purityName"
         :rules="[
-            {required: true, message:'名称不能为空', trigger: 'blur'}
+            {required: true, message:'纯度信息不能为空', trigger: 'blur'}
         ]">
-          <el-input v-model="editForm.dangerName" autocomplete="off"></el-input>
+          <el-input v-model="editForm.purityName" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="modifyDangerTypeDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editDangerType">确 定</el-button>
+        <el-button @click="modifyDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editPurityInfo">确 定</el-button>
       </div>
     </el-dialog>
     <!-- 删除危化类型对话框采用 MessageBox弹框方式 -->
@@ -92,48 +93,31 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'DangerTypeSet',
+  name: 'PuritySet',
   data () {
     return {
       // 初始危化类型模拟数据
-      dangerTypeData: [
-        {
-          dangerID: 1,
-          dangerName: '普通品'
-        },
-        {
-          dangerID: 2,
-          dangerName: '易燃品'
-        },
-        {
-          dangerID: 3,
-          dangerName: '易爆品'
-        },
-        {
-          dangerID: 4,
-          dangerName: '有毒'
-        }
-      ],
+      purityData: [],
       // 添加危化类型表单对应对象
       addForm: {
-        dangerName: ''
+        purityName: ''
       },
       editForm: {
-        dangerID: '',
-        dangerName: ''
+        purityID: '',
+        purityName: ''
       },
-      addDangerTypeDialogVisible: false, // 添加危化类型窗口控制标识
-      modifyDangerTypeDialogVisible: false // 修改危化类型窗口控制标识
+      addDialogVisible: false, // 添加危化类型窗口控制标识
+      modifyDialogVisible: false // 修改危化类型窗口控制标识
     }
   },
   methods: {
-    getDangerTypeList: function () {
+    getPurityList: function () {
       axios({
         method: 'get',
-        url: '/api/dangerType/getDangerTypeList'
+        url: '/api/puritySet/getPurityList'
       })
         .then((res) => {
-          this.dangerTypeData = res.data
+          this.purityData = res.data
         })
         .catch((err) => {
           console.log(err)
@@ -143,7 +127,7 @@ export default {
           })
         })
     },
-    addDangerType: function () {
+    addPurityInfo: function () {
       // todo 先判断在列表中是否存在相同的科室名称
       this.$refs['addForm'].validate((isPass, object) => {
         if (!isPass) {
@@ -153,8 +137,8 @@ export default {
           })
         } else {
           let flag = true
-          for (let i = 0; i < this.dangerTypeData.length; i++) {
-            if (this.addForm.dangerName === this.dangerTypeData[i].dangerName) {
+          for (let i = 0; i < this.purityData.length; i++) {
+            if (this.addForm.purityName === this.purityData[i].purityName) {
               flag = false
               break
             }
@@ -162,9 +146,9 @@ export default {
           if (flag) {
             axios({
               method: 'post',
-              url: '/api/dangerType/addDangerType',
+              url: '/api/puritySet/addPurityInfo',
               data: {
-                dangerName: this.addForm.dangerName
+                purityName: this.addForm.purityName
               }
             })
               .then((res) => {
@@ -175,8 +159,8 @@ export default {
                     type: 'success'
                   })
                   this.$refs['addForm'].resetFields()
-                  this.addDangerTypeDialogVisible = false
-                  this.getDangerTypeList()
+                  this.addDialogVisible = false
+                  this.getPurityList()
                 } else {
                   this.$message({
                     message: res.data.msg,
@@ -194,17 +178,17 @@ export default {
           } else {
             this.$message({
               type: 'error',
-              message: '该危化类型已存在!'
+              message: '该纯度信息已存在!'
             })
           }
         }
       })
     },
     showAddDialog: function () {
-      this.addDangerTypeDialogVisible = true
+      this.addDialogVisible = true
     },
     handleDelete: function (index, row) {
-      this.$confirm('您确定删除危化类型吗?', '提示', {
+      this.$confirm('您确定删除纯度信息吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -223,7 +207,7 @@ export default {
                 message: res.data.msg,
                 type: 'success'
               })
-              this.getDangerTypeList()
+              this.getPurityList()
             } else {
               this.$message({
                 message: res.data.msg,
@@ -246,11 +230,11 @@ export default {
       })
     },
     handleEdit: function (index, row) {
-      this.editForm.dangerID = row.dangerID
-      this.editForm.dangerName = row.dangerName
-      this.modifyDangerTypeDialogVisible = true
+      this.editForm.purityID = row.purityID
+      this.editForm.purityName = row.purityName
+      this.modifyDialogVisible = true
     },
-    editDangerType: function () {
+    editPurityInfo: function () {
       this.$refs['editForm'].validate((isPass, object) => {
         if (isPass) {
           if (!isPass) {
@@ -260,8 +244,8 @@ export default {
             })
           } else {
             let flag = true
-            for (let i = 0; i < this.dangerTypeData.length; i++) {
-              if (this.editForm.dangerName === this.dangerTypeData[i].dangerName) {
+            for (let i = 0; i < this.purityData.length; i++) {
+              if (this.editForm.purityName === this.purityData[i].purityName) {
                 flag = false
                 break
               }
@@ -269,11 +253,11 @@ export default {
             if (flag) {
               axios({
                 method: 'post',
-                url: '/api/dangerType/editDangerType',
+                url: '/api/puritySet/editPurityInfo',
                 data: {
                   // deptID: this.editForm.deptID,
                   // deptName: this.editForm.deptName
-                  dangerTypeInfo: this.editForm
+                  purityInfo: this.editForm
                 }
               })
                 .then((res) => {
@@ -283,8 +267,8 @@ export default {
                       message: res.data.msg,
                       type: 'success'
                     })
-                    this.modifyDangerTypeDialogVisible = false
-                    this.getDangerTypeList()
+                    this.modifyDialogVisible = false
+                    this.getPurityList()
                   } else {
                     this.$message({
                       message: res.data.msg,
@@ -311,7 +295,7 @@ export default {
     }
   },
   mounted: function () {
-    this.getDangerTypeList()
+    this.getPurityList()
   }
 }
 </script>

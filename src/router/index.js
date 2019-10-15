@@ -7,6 +7,7 @@ import ReagentTypeSet from '@/components/BaseSets/ReagentTypeSet'
 import ReagentStateSet from '@/components/BaseSets/ReagentStateSet'
 import DangerTypeSet from '@/components/BaseSets/DangerTypeSet'
 import ModuleSet from '@/components/BaseSets/ModuleSet'
+import PuritySet from '@/components/BaseSets/PuritySet'
 
 import SupplierManage from '@/components/DataManage/SupplierManage'
 import ReagentInfoManage from '@/components/DataManage/ReagentInfoManage'
@@ -59,6 +60,10 @@ export default new Router({
         {
           path: '/ModuleSet',
           component: ModuleSet
+        },
+        {
+          path: '/PuritySet',
+          component: PuritySet
         },
         {
           path: '/SupplierManage',
