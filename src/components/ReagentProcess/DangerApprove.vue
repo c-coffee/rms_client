@@ -40,12 +40,17 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentSpec"
+                prop="appSpec"
                 label="规格"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentNum"
+                prop="appPurity"
+                label="纯度"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="appNum"
                 label="数量"
                 align="center">
               </el-table-column>
@@ -98,7 +103,7 @@
                 <el-button
                 size="mini"
                 type="danger"
-                @click="rejectApp(scope.$index, scope.row)">审核驳回</el-button>
+                @click="showRejectDlg(scope.$index, scope.row)">审核驳回</el-button>
                 <el-button
                 size="mini"
                 type="success"
@@ -109,6 +114,27 @@
         </el-card>
       </el-col>
     </el-row>
+    <el-dialog
+    title="审核驳回"
+    :close-on-click-modal="false"
+    :visible.sync="rejectDialogVisible"
+    width="350px">
+      <el-form :model="rejectForm" ref="rejectForm">
+        <el-form-item
+        label="驳回原因"
+        label-width="100px"
+        prop="approveReason"
+        :rules="[
+            {required: true, message:'驳回原因不能为空', trigger: 'blur'}
+        ]">
+          <el-input v-model="rejectForm.approveReason" type="textarea" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="rejectDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="rejectApp">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -118,13 +144,53 @@ export default {
   name: 'ReagentApplication',
   data () {
     return {
-      // 初始试剂信息模拟数据
-      reagentAppDetail: [],
+      rejectForm: {}, // 驳回信息输入表单
+      currentAppId: 0, // 当前处理的appId
+      rejectDialogVisible: false, // 驳回理由输入窗口
+      reagentAppDetail: [], // 初始试剂信息模拟数据
       reagentList: [],
       expands: [] // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
     }
   },
   methods: {
+    // 显示驳回窗口
+    showRejectDlg: function (index, row) {
+      this.currentAppId = row.appID
+      this.rejectDialogVisible = true
+    },
+    rejectApp: function () {
+      axios({
+        method: 'post',
+        url: '/api/application/appRject',
+        data: {
+          appId: this.currentAppId,
+          approveReason: this.rejectForm.approveReason
+        }
+      })
+        .then((res) => {
+          // 获得反馈信息，给出提示，重新读取列表
+          if (res.data.result === 1) {
+            this.getApplicationList()
+            this.rejectDialogVisible = false
+            this.$message({
+              type: 'success',
+              message: res.data.msg
+            })
+          } else {
+            this.$message({
+              type: 'error',
+              message: res.data.msg
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     // 点开详情懒加载申购试剂数据
     loadDetail: function (row, expandedRows) {
       let that = this

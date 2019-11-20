@@ -682,6 +682,7 @@ export default {
           //     }
           //   }
           // }
+          // console.log(res)
           this.reagentInfoData = res.data.data
           this.pageCount = res.data.count
           // this.getBaseFullName()

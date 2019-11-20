@@ -24,24 +24,24 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentSpec"
-                label="规格"
-                align="center">
-              </el-table-column>
-              <el-table-column
                 prop="reagentUnit"
                 label="单位"
                 align="center"
                 width="55px">
               </el-table-column>
               <el-table-column
-                prop="dangerName"
-                label="易制毒"
+                prop="appSpec"
+                label="规格"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="appPurity"
+                label="纯度"
                 align="center"
                 width="70px">
               </el-table-column>
               <el-table-column
-                prop="reagentNum"
+                prop="appNum"
                 label="申领数量"
                 align="center">
               </el-table-column>
@@ -66,7 +66,7 @@
           <el-row>
             <el-col :span="18">
               <div>
-                搜索&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:100px">
+                查询&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:100px">
                 <el-option
                   v-for="item in reagentType"
                   :key="item.typeID"
@@ -82,15 +82,7 @@
                   :value="item.dangerID">
                 </el-option>
               </el-select>
-              <el-select v-model="searchInfo.searchReagentStateID" placeholder="性状类别" size="small" style="width:100px">
-                <el-option
-                  v-for="item in reagentState"
-                  :key="item.stateID"
-                  :label="item.stateName"
-                  :value="item.stateID">
-                </el-option>
-              </el-select>
-                <el-input style="width:200px" placeholder="请输入试剂名称或试剂简码" v-model="searchInfo.searchReagent" size="small">
+                <el-input style="width:300px" placeholder="请输入试剂名称,CAS或试剂简码" v-model="searchInfo.searchReagent" size="small">
                   <el-button slot="append" icon="el-icon-search" @click="getStocksList"></el-button>
                 </el-input>
               </div>
@@ -110,21 +102,79 @@
           <el-table
             :data="stockInfoData"
             border
-            size="mini">
+            size="mini"
+            ref="stockTable">
+            <el-table-column type="expand">
+              <template slot-scope="props">
+                <div class="supplierDetail">
+                <el-row>
+                  <el-col :span="3" class="detailTitle">
+                    名称：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.reagentName }}
+                  </el-col>
+                  <el-col :span="3" class="detailTitle">
+                    短码：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.reagentShortCode }}
+                  </el-col>
+                </el-row>
+                <el-row>
+                  <el-col :span="3" class="detailTitle">
+                    类型：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.typeName }}
+                  </el-col>
+                  <el-col :span="3" class="detailTitle">
+                    CAS：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.CAS }}
+                  </el-col>
+                </el-row>
+                <el-row>
+                  <el-col :span="3" class="detailTitle">
+                    规格：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.reagentSpec }}
+                  </el-col>
+                  <el-col :span="3" class="detailTitle">
+                    单位：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.reagentUnit }}
+                  </el-col>
+                </el-row>
+                <el-row>
+                  <el-col :span="3" class="detailTitle">
+                    危化类别：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.dangerName }}
+                  </el-col>
+                  <el-col :span="3" class="detailTitle">
+                    制造商：
+                  </el-col>
+                  <el-col :span="9">
+                    {{ props.row.reagentProduct }}
+                  </el-col>
+                </el-row>
+                </div>
+              </template>
+            </el-table-column>
               <el-table-column
-                prop="reagentID"
+                type="index"
                 label="序号"
                 align="center"
-                width="50px">
+                width="45px">
               </el-table-column>
               <el-table-column
                 prop="reagentName"
                 label="试剂名称"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                prop="reagentSpec"
-                label="规格"
                 align="center">
               </el-table-column>
               <el-table-column
@@ -134,23 +184,59 @@
                 width="60px">
               </el-table-column>
               <el-table-column
-                prop="initialNum"
+                prop="reagentNum"
                 label="库存量"
                 align="center"
                 width="70px">
               </el-table-column>
               <el-table-column
+                prop="reagentSpec"
+                label="规格"
+                align="center"
+                width="120px">
+                <template slot-scope="scope">
+                  <el-select v-model="scope.row.choiceSpec" @change="getStock(scope.row, scope.$index)">
+                    <el-option
+                      v-for="(item,index) in scope.row.specList"
+                      :key="index"
+                      :label="item"
+                      :value="item"
+                    >
+                    </el-option>
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="reagentPurity"
+                label="纯度"
+                align="center"
+                width="138px">
+                <template slot-scope="scope">
+                  <el-select v-model="scope.row.reagentPurity" @visible-change="$forceUpdate()" @change="getStock(scope.row, scope.$index)">
+                    <el-option
+                      v-for="item in reagentPurity"
+                      :key="item.purityID"
+                      :label="item.purityName"
+                      :value="item.purityName"
+                    >
+                    </el-option>
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column
                 prop="appNum"
                 label="申领数量"
-                align="center">
+                align="center"
+                width="125px">
                 <template slot-scope="scope">
-                  <el-input-number style="width:110px" v-model="scope.row.appNum"  value=0 :precision="2" :step="1" :min="0" :max="10000" @change="changeEditInput" size="mini"></el-input-number>
+                  <el-input-number style="width:100px" v-model="scope.row.appNum"  value=0 :precision="2" :step="1" :min="0" :max="10000" @change="changeEditInput" size="mini"></el-input-number>
                 </template>
               </el-table-column>
               <el-table-column
                 label="备注"
                 align="center"
-                prop="remark">
+                prop="remark"
+                width="125px">
                 <template slot-scope="scope">
                   <el-input v-model="scope.row.remark" placeholder="请输入备注" size="mini" style="width:100px"></el-input>
                 </template>
@@ -183,7 +269,6 @@ export default {
       searchInfo: {
         searchReagentTypeID: '',
         searchReagentDangerID: '',
-        searchReagentStateID: '',
         searchReagent: ''
       },
       // 初始试剂信息模拟数据
@@ -196,6 +281,7 @@ export default {
       stockInfoData: [],
       reagentDanger: [],
       reagentState: [],
+      reagentPurity: [],
       reagentType: [],
       currentPage: 1,
       pageSize: 5,
@@ -203,6 +289,39 @@ export default {
     }
   },
   methods: {
+    // 选择纯度和规格后，获得库存数量
+    getStock (rowInfo, rowIndex) {
+      let stockInfo = {
+        reagentID: rowInfo.reagentID,
+        stockSpec: rowInfo.choiceSpec,
+        stockPurity: rowInfo.reagentPurity
+      }
+      axios({
+        method: 'get',
+        url: '/api/stocks/getStock',
+        params: {
+          stockInfo
+        }
+      })
+        .then((res) => {
+          let tempNum
+          if (res.data.results.length === 0) {
+            tempNum = 0
+            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
+          } else {
+            tempNum = res.data.results[0].reagentNum
+            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
+          }
+          rowInfo.reagentNum = tempNum
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     // 界面初始化
     // 如果是由申请单管理页面点击修改调整过来，则读取申请单信息，初始化界面
     // 如果是点击添加按钮跳转过来，则直接初始化
@@ -222,7 +341,7 @@ export default {
         })
           .then((res) => {
             this.appDetail = res.data
-            // console.log(res)
+            console.log(res.data)
           })
           .catch((err) => {
             console.log(err)
@@ -266,19 +385,21 @@ export default {
       }
 
       for (let i = 0; i < this.appDetail.length; i++) {
+        // **** 写死了判断危化品的条件为1
         if (this.appDetail[i].reagentDangerID !== 1) {
-          console.log('0999999999998888888888')
           this.appInfo.hasDanger = true
           break
         }
       }
-      console.log(this.appDetail, this.appInfo.hasDanger)
+      // console.log(this.appDetail, this.appInfo.hasDanger)
       let urlAddr
       if (this.appInfo.appID === 0) {
         urlAddr = '/api/application/appSave'
       } else {
         urlAddr = '/api/application/appModify'
       }
+
+      console.log(this.appDetail, this.appInfo)
       axios({
         method: 'post',
         url: urlAddr,
@@ -316,9 +437,11 @@ export default {
           this.reagentDanger = res.data.reagentDanger
           this.reagentState = res.data.reagentState
           this.reagentType = res.data.reagentType
+          this.reagentPurity = res.data.reagentPurity
           this.reagentDanger.unshift({dangerID: 0, dangerName: '全部', state: 1})
           this.reagentState.unshift({stateID: 0, stateName: '全部', state: 1})
           this.reagentType.unshift({typeID: 0, typeName: '全部', state: 1})
+          // this.reagentPurity.unshift({purityID: 0, purityName: '请选择', state: 1})
           // this.getStocksList()
         })
         .catch((err) => {
@@ -347,6 +470,9 @@ export default {
         .then((res) => {
           // console.log(res)
           this.stockInfoData = res.data.data
+          for (let i = 0; i < this.stockInfoData.length; i++) {
+            this.stockInfoData[i].specList = this.stockInfoData[i].reagentSpec.split(',')
+          }
           this.pageCount = res.data.count
         })
         .catch((err) => {
@@ -381,8 +507,20 @@ export default {
     handleEdit: function (index, row) {
     },
     handleAdd: function (index, row) {
-      // console.log(row.appNum, row.remark)
-      console.log(row)
+      if (typeof row.choiceSpec === 'undefined') {
+        this.$message({
+          type: 'error',
+          message: '请选择试剂规格!'
+        })
+        return
+      }
+      if (typeof row.reagentPurity === 'undefined') {
+        this.$message({
+          type: 'error',
+          message: '请选择试剂纯度!'
+        })
+        return
+      }
       if (row.appNum === 0 || isNaN(row.appNum)) {
         // 提示请输入有效申购数量
         this.$message({
@@ -391,10 +529,12 @@ export default {
         })
       } else {
         // 需要判断是否已经添加了该试剂，如果是，则将数量相加
+        console.log(row)
+        console.log(this.appDetail)
         let flag = true
         for (let reagent of this.appDetail) {
-          if (reagent.reagentID === row.reagentID) {
-            reagent.reagentNum += row.appNum
+          if (reagent.reagentID === row.reagentID && reagent.appSpec === row.choiceSpec && reagent.appPurity === row.reagentPurity) {
+            reagent.appNum += row.appNum
             reagent.remark = row.remark
             flag = false
           }
@@ -405,8 +545,9 @@ export default {
             reagentID: row.reagentID,
             reagentName: row.reagentName,
             reagentUnit: row.reagentUnit,
-            reagentSpec: row.reagentSpec,
-            reagentNum: row.appNum,
+            appSpec: row.choiceSpec,
+            appPurity: row.reagentPurity,
+            appNum: row.appNum,
             reagentDangerID: row.reagentDangerID,
             dangerName: row.dangerName,
             remark: row.remark

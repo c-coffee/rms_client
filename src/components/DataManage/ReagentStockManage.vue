@@ -183,7 +183,7 @@ export default {
       reagentState: [],
       reagentType: [],
       currentPage: 1,
-      pageSize: 1,
+      pageSize: 8,
       pageCount: 0
     }
   },

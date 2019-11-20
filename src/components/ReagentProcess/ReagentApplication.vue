@@ -41,12 +41,17 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentSpec"
+                prop="appSpec"
                 label="规格"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentNum"
+                prop="appPurity"
+                label="纯度"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="appNum"
                 label="数量"
                 align="center">
               </el-table-column>
@@ -75,7 +80,7 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="approverName"
+              prop="userRealName"
               label="审核人"
               align="center">
           </el-table-column>
@@ -160,6 +165,7 @@ export default {
         }
       })
         .then((res) => {
+          // console.log(res)
           this.reagentList = res.data
           // console.log(res)
         })
@@ -234,7 +240,7 @@ export default {
         }
       })
         .then((res) => {
-          console.log(res)
+          // console.log(res)
           if (res.data.result === 1) {
             this.getApplicationList()
             this.$message({

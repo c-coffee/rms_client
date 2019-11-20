@@ -41,17 +41,22 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentSpec"
+                prop="appSpec"
                 label="规格"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentNum"
+                prop="appPurity"
+                label="纯度"
+                align="center">
+              </el-table-column>
+              <el-table-column
+                prop="appNum"
                 label="数量"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="stockNum"
+                prop="reagentNum"
                 label="库存"
                 align="center">
               </el-table-column>
@@ -228,7 +233,11 @@ export default {
     },
     handleProvide: function (index, row) {
       // 路由跳转带参数
-      this.$router.push({path: '/ProvideReagent', query: {appID: row.appID}})
+      this.$router.push({path: '/ProvideReagent', query: {appInfo: row}})
+    },
+    orderApp: function (index, row) {
+      // 申请采购
+      this.$router.push({path: '/orderApplication', query: {appInfo: row}})
     },
     getApplicationList () {
       axios({
