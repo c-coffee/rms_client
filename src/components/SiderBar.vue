@@ -66,84 +66,76 @@
         </el-submenu>
         <el-submenu index="3">
             <template slot="title" v-if="checkRank('BaseSet')">
-                <i class="el-icon-location"></i>
-                <span>试剂流程</span>
+              <i class="el-icon-location"></i>
+              <span>试剂流程</span>
             </template>
             <el-menu-item index="/ReagentApplication" v-if="checkRank('BaseSet')">
-                <i class="el-icon-folder-add"></i>
-                <span slot="title">试剂申请</span>
+              <i class="el-icon-folder-add"></i>
+              <span slot="title">试剂申请</span>
             </el-menu-item>
             <el-menu-item index="/ReagentReceive" v-if="checkRank('BaseSet')">
-                <i class="el-icon-folder-add"></i>
-                <span slot="title">试剂领取</span>
-                <el-badge :value="1" style="float:right" type="primary">
-                </el-badge>
+              <i class="el-icon-folder-add"></i>
+              <span slot="title">试剂领取</span>
+              <el-badge :value="1" style="float:right" type="primary">
+              </el-badge>
             </el-menu-item>
             <el-menu-item index="/ReagentReturnApp" v-if="checkRank('BaseSet')">
-                <i class="el-icon-folder-remove"></i>
-                <span slot="title">试剂退库</span>
+              <i class="el-icon-folder-remove"></i>
+              <span slot="title">试剂退库</span>
             </el-menu-item>
             <el-menu-item index="/ReagentExpend" v-if="checkRank('BaseSet')">
-                <i class="el-icon-folder-delete"></i>
-                <span slot="title">试剂消耗</span>
+              <i class="el-icon-folder-delete"></i>
+              <span slot="title">试剂消耗</span>
             </el-menu-item>
             <el-menu-item index="/DangerApprove" v-if="checkRank('BaseSet')">
-                 <i class="el-icon-warning-outline"></i>
-                  <span slot="title">危化审核</span>
-                  <el-badge :value="6" style="float:right" type="primary">
-                  </el-badge>
+              <i class="el-icon-warning-outline"></i>
+              <span slot="title">危化审核</span>
+              <el-badge :value="6" style="float:right" type="primary">
+              </el-badge>
             </el-menu-item>
         </el-submenu>
         <el-submenu index="5">
             <template slot="title" v-if="checkRank('BaseSet')">
-                <i class="el-icon-location"></i>
-                <span>试剂管理</span>
+              <i class="el-icon-location"></i>
+              <span>试剂管理</span>
             </template>
             <el-menu-item index="/ApplicationManage" v-if="checkRank('BaseSet')">
-                <i class="el-icon-notebook-2"></i>
-                <span slot="title">申领管理</span>
+              <i class="el-icon-notebook-2"></i>
+              <span slot="title">申领管理</span>
+            </el-menu-item>
+            <el-menu-item index="/ApplicationOrderManage" v-if="checkRank('BaseSet')">
+              <i class="el-icon-notebook-2"></i>
+              <span slot="title">申购管理</span>
             </el-menu-item>
             <el-menu-item index="/OrderManage" v-if="checkRank('BaseSet')">
-                <i class="el-icon-bank-card"></i>
-                <span slot="title">试剂申购</span>
+              <i class="el-icon-bank-card"></i>
+              <span slot="title">试剂采购</span>
             </el-menu-item>
-            <el-menu-item index="5.3" v-if="checkRank('BaseSet')">
-                <i class="el-icon-shopping-cart-full"></i>
-                <span slot="title">申购审核</span>
-            </el-menu-item>
-            <el-menu-item index="5.4" v-if="checkRank('BaseSet')">
-                <i class="el-icon-coin"></i>
-                <span slot="title">入库管理</span>
-            </el-menu-item>
-            <el-menu-item index="5.4" v-if="checkRank('BaseSet')">
-                <i class="el-icon-coin"></i>
-                <span slot="title">出库管理</span>
+            <el-menu-item index="/OrderApprove" v-if="checkRank('BaseSet')">
+              <i class="el-icon-shopping-cart-full"></i>
+              <span slot="title">采购审核</span>
             </el-menu-item>
             <el-menu-item index="5.5" v-if="checkRank('BaseSet')">
-                <i class="el-icon-document-delete"></i>
-                <span slot="title">试剂报损</span>
-            </el-menu-item>
-            <el-menu-item index="5.5" v-if="checkRank('BaseSet')">
-                <i class="el-icon-setting"></i>
-                <span slot="title">库存盘点</span>
+              <i class="el-icon-document-delete"></i>
+              <span slot="title">试剂报损</span>
             </el-menu-item>
         </el-submenu>
         <el-submenu index="9">
             <template slot="title" v-if="checkRank('BaseSet')">
-                <i class="el-icon-location"></i>
-                <span>统计分析</span>
+              <i class="el-icon-location"></i>
+              <span>统计分析</span>
             </template>
             <el-menu-item index="9.1" v-if="checkRank('BaseSet')">
-                <i class="el-icon-monitor"></i>
-                <span slot="title"><router-link to="/" tag="span">科室库存</router-link></span>
+              <i class="el-icon-monitor"></i>
+              <span slot="title"><router-link to="/" tag="span">科室库存</router-link></span>
             </el-menu-item>
             <el-menu-item index="9.2" v-if="checkRank('BaseSet')">
-                <i class="el-icon-suitcase-1"></i>
-                <span slot="title">试剂库存</span>
+              <i class="el-icon-suitcase-1"></i>
+              <span slot="title">试剂库存</span>
             </el-menu-item>
             <el-menu-item index="9.3" v-if="checkRank('BaseSet')">
-                <i class="el-icon-connection"></i>
-                <span slot="title">申领消耗</span>
+              <i class="el-icon-setting"></i>
+              <span slot="title">库存盘点</span>
             </el-menu-item>
         </el-submenu>
     </el-menu>

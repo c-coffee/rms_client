@@ -4,16 +4,17 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>采购审核</span>
+            <span>申购管理</span>
+            <el-button style="float: right; padding: 3px 0" type="text"><router-link to="/ApplicationOrderAdd" tag="span">新建申购</router-link></el-button>
           </div>
           <el-table
           :data="orderList"
+          ref="orderTable"
           style="width: 100%"
-          max-height="450"
+          max-height="650"
           size="mini"
           row-key="orderID"
           lazy
-          ref="orderTable"
           @expand-change="loadDetail"
           :expand-row-keys="expands"
           >
@@ -38,8 +39,7 @@
                 <el-table-column
                   prop="reagentUnit"
                   label="单位"
-                  align="center"
-                  width="50px">
+                  align="center">
                 </el-table-column>
                 <el-table-column
                   prop="orderPurity"
@@ -54,8 +54,7 @@
                 <el-table-column
                   prop="reagentNum"
                   label="库存"
-                  align="center"
-                  width="50px">
+                  align="center">
                 </el-table-column>
                 <el-table-column
                   prop="orderNum"
@@ -73,7 +72,7 @@
           <el-table-column
               prop="orderID"
               label="序号"
-              width="180"
+              width="80"
               align="center">
           </el-table-column>
           <el-table-column
@@ -91,79 +90,104 @@
               label="当前步骤"
               align="center"
               :filters="[{text:'待提交',value:10},{text:'待处理',value:11},{text:'询价中',value:12},{text:'待审核',value:13},{text:'申购驳回',value:14},{text:'采购驳回',value:15},{text:'采购中',value:16},{text:'已完成',value:17}]"
-              :filter-method="filterState"
-              >
+              :filter-method="filterState">
+              <template slot-scope="scope">
+                <el-tooltip :disabled="scope.row.showRejectInfo" class="item" effect="dark" :content="scope.row.applyRejectReason" placement="top-start">
+                  <el-tag :type="scope.row.tagType">{{scope.row.stepName}}</el-tag>
+                </el-tooltip>
+              </template>
           </el-table-column>
           <el-table-column
             label="操作"
-            width="300px"
+            width="350px"
             align="center">
               <template slot-scope="scope">
                 <el-button
                 size="mini"
+                type="success"
+                :disabled="scope.row.disableModify"
+                @click="handleEdit(scope.$index, scope.row)">修改</el-button>
+                <el-button
+                size="mini"
                 type="danger"
-                @click="handleReject(scope.$index, scope.row)">审核驳回</el-button>
+                :disabled="scope.row.disableModify"
+                @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                 <el-button
                 size="mini"
                 type="primary"
-                @click="handleApprove(scope.$index, scope.row)">审核通过</el-button>
+                :disabled="scope.row.disableModify"
+                @click="handleSubmit(scope.$index, scope.row)">提交</el-button>
+                <el-button
+                size="mini"
+                type="warning"
+                :disabled="scope.row.disableInStock"
+                @click="handleStockIn(scope.row)">入库</el-button>
               </template>
             </el-table-column>
           </el-table>
         </el-card>
       </el-col>
     </el-row>
-    <el-dialog
-      title="驳回原因"
-      :visible.sync="dialogRejectVisible"
-      width="350px"
-      :close-on-click-modal="false">
-      <el-form :model="rejectForm">
-        <el-form-item>
-          <el-input v-model="rejectForm.reason" type="textarea" rows="4" autocomplete="off"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogRejectVisible = false">取 消</el-button>
-        <el-button type="primary" @click="saveReject">确 定</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import axios from 'axios'
 export default {
-  name: 'OrderApprove',
+  name: 'ApplicationOrderManage',
   data () {
     return {
+      // 初始试剂信息模拟数据
       orderList: [],
       orderDetail: [],
-      expands: [], // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
-      dialogRejectVisible: false, // 驳回窗口控制标志
-      rejectForm: {
-        orderID: 0,
-        reason: ''
-      },
-      choiceInfo: {
-        orderDetailID: 0,
-        supplierID: 0,
-        supplierName: '',
-        orderRow: ''
-      }
+      expands: [] // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
     }
   },
   methods: {
+    handleStockIn: function (row) {
+      // 入库处理
+      if (this.$refs['orderTable'].expandRowKeys.length === 0) {
+        this.loadDetail(row, [row])
+      } else {
+        this.loadDetail(row, [])
+      }
+    },
     getOrderList: function () {
       axios({
         method: 'get',
         url: '/api/order/getOrderList',
         params: {
-          stepInfo: 'orderApprove'
+          stepInfo: 'ApplicationOrderManage'
         }
       })
         .then((res) => {
           this.orderList = res.data
+          // 修改，删除，提交按钮状态，只有在当前申购单处于待提交状态时，可以使用
+          // 待提交状态值为 10 ,申购驳回状态值为 14,参见 stepList 表
+          for (let i = 0; i < this.orderList.length; i++) {
+            this.orderList[i].tagType = 'info'
+            if (this.orderList[i].stepID === 10) {
+              // 待提交
+              this.orderList[i].disableModify = false // 控制是否显示修改，删除，提交按钮
+              this.orderList[i].tagType = 'success' // 设置当前步骤所用模版
+            } else {
+              this.orderList[i].disableModify = true
+            }
+            if (this.orderList[i].stepID === 16) {
+              // 入库
+              this.orderList[i].disableInStock = false // 控制是否显示入库按钮
+            } else {
+              this.orderList[i].disableInStock = true
+            }
+            if (this.orderList[i].stepID === 14) {
+              // 申购驳回
+              this.orderList[i].tagType = 'danger' // 设置当前步骤所用模版
+              this.orderList[i].disableModify = false // 控制是否显示修改，删除，提交按钮
+              this.orderList[i].showRejectInfo = false // 控制是否显示 驳回信息提示
+            } else {
+              this.orderList[i].showRejectInfo = true
+            }
+          }
         })
         .catch((err) => {
           console.log(err)
@@ -176,20 +200,57 @@ export default {
     filterState: function (value, row) {
       return row.stepID === value
     },
-    handleReject: function (value, row) {
-      this.rejectForm.orderID = row.orderID
-      this.dialogRejectVisible = true
-    },
-    handleApprove: function (index, row) {
-      // 审核通过
-      this.$confirm('您确定通过审核吗?', '提示', {
+    handleDelete: function (index, row) {
+      this.$confirm('您确定删除申购单吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
+        type: 'error'
       }).then(() => {
         axios({
           method: 'get',
-          url: '/api/order/ApproveOrder',
+          url: '/api/order/deleteOrderApp',
+          params: {
+            orderID: row.orderID
+          }
+        })
+          .then((res) => {
+            // 获得反馈信息，给出提示，重新读取列表
+            if (res.data.result === 1) {
+              this.getOrderList()
+              this.$message({
+                type: 'success',
+                message: res.data.msg
+              })
+            } else {
+              this.$message({
+                type: 'error',
+                message: res.data.msg
+              })
+            }
+          })
+          .catch((err) => {
+            console.log(err)
+            this.$message({
+              message: '服务器错误！',
+              type: 'error'
+            })
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
+    handleSubmit: function (index, row) {
+      this.$confirm('您确定提交申购单吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        axios({
+          method: 'get',
+          url: '/api/order/submitOrderApp',
           params: {
             orderID: row.orderID
           }
@@ -223,6 +284,10 @@ export default {
         })
       })
     },
+    handleEdit: function (index, row) {
+      // 路由跳转带参数
+      this.$router.push({path: '/ApplicationOrderAdd', query: {orderID: row.orderID}})
+    },
     loadDetail: function (row, expandedRows) {
       let that = this
       if (expandedRows.length) {
@@ -247,31 +312,6 @@ export default {
               this.orderDetail[i].reagentNum = 0
             }
           }
-        })
-        .catch((err) => {
-          console.log(err)
-          this.$message({
-            message: '服务器错误！',
-            type: 'error'
-          })
-        })
-    },
-    saveReject: function () {
-      // 保存驳回理由，改变申购单状态
-      axios({
-        method: 'post',
-        url: '/api/order/saveOrderReject',
-        data: {
-          rejectInfo: this.rejectForm
-        }
-      })
-        .then((res) => {
-          this.dialogRejectVisible = false
-          this.getOrderList()
-          this.$message({
-            type: 'success',
-            message: res.data.msg
-          })
         })
         .catch((err) => {
           console.log(err)
