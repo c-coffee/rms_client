@@ -4,10 +4,46 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>试剂消耗管理</span>
+            <span>试剂报损管理</span>
           </div>
+          <el-row>
+            <el-col :span="18">
+              <div>
+                查询&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:100px">
+                <el-option
+                  v-for="item in reagentType"
+                  :key="item.typeID"
+                  :label="item.typeName"
+                  :value="item.typeID">
+                </el-option>
+                </el-select>
+                <el-select v-model="searchInfo.searchReagentDangerID" placeholder="危化类别"  size="small" style="width:100px">
+                <el-option
+                  v-for="item in reagentDanger"
+                  :key="item.dangerID"
+                  :label="item.dangerName"
+                  :value="item.dangerID">
+                </el-option>
+              </el-select>
+                <el-input style="width:300px" placeholder="请输入试剂名称,CAS或试剂简码" v-model="searchInfo.searchReagent" size="small">
+                  <el-button slot="append" icon="el-icon-search" @click="getStocksList"></el-button>
+                </el-input>
+              </div>
+            </el-col>
+            <el-col :span="6">
+              <el-pagination
+                @current-change="handleCurrentChange"
+                layout="prev, pager, next"
+                style="float:right"
+                :page-size="this.pageSize"
+                :current-page="this.currentPage"
+                :total="this.pageCount">
+              </el-pagination>
+            </el-col>
+          </el-row>
+          <el-divider></el-divider>
           <el-table
-          :data="deptStockList"
+          :data="stocksList"
           style="width: 100%"
           max-height="450"
           size="mini"
@@ -83,7 +119,7 @@
             </template>
           </el-table-column>
           <el-table-column
-              prop="deptStocksID"
+              prop="stocksID"
               label="序号"
               width="80"
               align="center">
@@ -99,12 +135,12 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="deptStocksSpec"
+              prop="stockSpec"
               label="规格"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="deptStocksPurity"
+              prop="stockPurity"
               label="纯度"
               align="center">
           </el-table-column>
@@ -116,7 +152,7 @@
                 <el-button
                 size="mini"
                 type="primary"
-                @click="handleExpend(scope.$index, scope.row)">消耗</el-button>
+                @click="handleDamage(scope.$index, scope.row)">报损</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -125,24 +161,24 @@
     </el-row>
       <el-dialog
       title="试剂消耗"
-      :visible.sync="dialogExpendVisible"
+      :visible.sync="dialogDamageVisible"
       :close-on-click-modal="false"
       width="400px">
         <el-row>
          <el-col>
-           <el-form ref="form" :model="expendForm" label-width="80px">
+           <el-form ref="form" :model="damageForm" label-width="80px">
             <el-form-item label="消耗数量">
-              <el-input-number v-model="expendForm.reagentNum" style="width:200px" :min="1" :max="expendForm.stockNum" :step="1" label="入库数量"></el-input-number>
+              <el-input-number v-model="damageForm.reagentNum" style="width:200px" :min="1" :max="damageForm.stockNum" :step="1" label="入库数量"></el-input-number>
             </el-form-item>
             <el-form-item label="用途描述">
-              <el-input v-model="expendForm.reason" type="textarea" rows="3" autocomplete="off"></el-input>
+              <el-input v-model="damageForm.reason" type="textarea" rows="3" autocomplete="off"></el-input>
             </el-form-item>
            </el-form>
          </el-col>
         </el-row>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogExpendVisible = false">取 消</el-button>
-        <el-button type="primary" @click="saveExpend">确 定</el-button>
+        <el-button type="primary" @click="saveDamage">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -151,12 +187,21 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'ReagentExpend',
+  name: 'ReagentDamage',
   data () {
     return {
-      deptStockList: [],
-      dialogExpendVisible: false,
-      expendForm: {
+      reagentDanger: [],
+      reagentState: [],
+      reagentPurity: [],
+      reagentType: [],
+      searchInfo: {
+        searchReagentTypeID: '',
+        searchReagentDangerID: '',
+        searchReagent: ''
+      },
+      stocksList: [],
+      dialogDamageVisible: false,
+      damageForm: {
         stockNum: 0,
         deptStocksID: 0,
         reagentID: 0,
@@ -164,17 +209,28 @@ export default {
         deptStocksPurity: '',
         reagentNum: 1,
         reason: ''
-      }
+      },
+      currentPage: 1,
+      pageSize: 8,
+      pageCount: 0
     }
   },
   methods: {
-    getDeptStockList: function () {
+    getBaseInfoList () {
       axios({
         method: 'get',
-        url: '/api/stocks/getDeptStockList'
+        url: '/api/reagentInfo/getBaseInfo'
       })
         .then((res) => {
-          this.deptStockList = res.data
+          this.reagentDanger = res.data.reagentDanger
+          this.reagentState = res.data.reagentState
+          this.reagentType = res.data.reagentType
+          this.reagentPurity = res.data.reagentPurity
+          this.reagentDanger.unshift({dangerID: 0, dangerName: '全部', state: 1})
+          this.reagentState.unshift({stateID: 0, stateName: '全部', state: 1})
+          this.reagentType.unshift({typeID: 0, typeName: '全部', state: 1})
+          // this.reagentPurity.unshift({purityID: 0, purityName: '请选择', state: 1})
+          // this.getStocksList()
         })
         .catch((err) => {
           console.log(err)
@@ -184,18 +240,43 @@ export default {
           })
         })
     },
-    saveExpend: function () {
-      // console.log(this.expendForm)
+    getStocksList: function () {
       axios({
-        method: 'post',
-        url: '/api/stocks/deptExpend',
-        data: {
-          expendInfo: this.expendForm
+        method: 'get',
+        url: '/api/stocks/getListStock',
+        params: {
+          searchInfo: this.searchInfo,
+          pageInfo: {
+            pageSize: this.pageSize,
+            currentPage: this.currentPage
+          }
         }
       })
         .then((res) => {
-          this.dialogExpendVisible = false
-          this.getDeptStockList()
+          // console.log(res)
+          this.stocksList = res.data.data
+          this.pageCount = res.data.count
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
+    saveDamage: function () {
+      // console.log(this.expendForm)
+      axios({
+        method: 'post',
+        url: '/api/stocks/saveDamage',
+        data: {
+          damageInfo: this.damageForm
+        }
+      })
+        .then((res) => {
+          this.dialogDamageVisible = false
+          this.getStocksList()
           this.$message({
             type: 'success',
             message: res.data.msg
@@ -209,17 +290,22 @@ export default {
           })
         })
     },
-    handleExpend: function (index, row) {
-      this.expendForm.stockNum = row.reagentNum
-      this.expendForm.reagentID = row.reagentID
-      this.expendForm.deptStocksSpec = row.deptStocksSpec
-      this.expendForm.deptStocksPurity = row.deptStocksPurity
-      this.expendForm.deptStocksID = row.deptStocksID
-      this.dialogExpendVisible = true
+    handleDamage: function (index, row) {
+      this.damageForm.stockNum = row.reagentNum
+      this.damageForm.reagentID = row.reagentID
+      this.damageForm.deptStocksSpec = row.deptStocksSpec
+      this.damageForm.deptStocksPurity = row.deptStocksPurity
+      this.damageForm.deptStocksID = row.deptStocksID
+      this.dialogDamageVisible = true
+    },
+    handleCurrentChange: function (currentPage) {
+      this.currentPage = currentPage
+      this.getStocksList()
     }
   },
   mounted: function () {
-    this.getDeptStockList()
+    this.getStocksList()
+    this.getBaseInfoList()
   }
 }
 </script>

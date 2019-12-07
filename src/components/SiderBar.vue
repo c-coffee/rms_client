@@ -79,10 +79,10 @@
               <el-badge :value="1" style="float:right" type="primary">
               </el-badge>
             </el-menu-item>
-            <el-menu-item index="/ReagentReturnApp" v-if="checkRank('BaseSet')">
+            <!-- <el-menu-item index="/ReagentReturnApp" v-if="checkRank('BaseSet')">
               <i class="el-icon-folder-remove"></i>
               <span slot="title">试剂退库</span>
-            </el-menu-item>
+            </el-menu-item> -->
             <el-menu-item index="/ReagentExpend" v-if="checkRank('BaseSet')">
               <i class="el-icon-folder-delete"></i>
               <span slot="title">试剂消耗</span>
@@ -115,7 +115,7 @@
               <i class="el-icon-shopping-cart-full"></i>
               <span slot="title">采购审核</span>
             </el-menu-item>
-            <el-menu-item index="5.5" v-if="checkRank('BaseSet')">
+            <el-menu-item index="/DamageReagent" v-if="checkRank('BaseSet')">
               <i class="el-icon-document-delete"></i>
               <span slot="title">试剂报损</span>
             </el-menu-item>

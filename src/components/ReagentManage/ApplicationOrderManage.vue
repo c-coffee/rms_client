@@ -66,6 +66,18 @@
                   label="供应商"
                   align="center">
                 </el-table-column>
+                <el-table-column
+                  label="选择"
+                  align="center">
+                  <template slot-scope="scope">
+                    <el-button
+                    size="mini"
+                    type="warning"
+                    round
+                    :disabled="scope.row.disableChoice"
+                    @click="handleChoice(scope.row)">选择</el-button>
+                  </template>
+                </el-table-column>
               </el-table>
             </template>
           </el-table-column>
@@ -128,6 +140,72 @@
         </el-card>
       </el-col>
     </el-row>
+    <el-dialog
+      title="入库"
+      :visible.sync="dialogStockInVisible"
+      :close-on-click-modal="false">
+      <el-card class="box-card">
+        <el-row>
+          <el-col :span="4">名称：</el-col>
+          <el-col :span="8">{{stockInInfo.reagentName}}</el-col>
+          <el-col :span="4">单位：</el-col>
+          <el-col :span="8">{{stockInInfo.reagentUnit}}</el-col>
+        </el-row>
+        <el-row class="center-row">
+          <el-col :span="4">申购数量：</el-col>
+          <el-col :span="8">{{stockInInfo.orderNum}}</el-col>
+          <el-col :span="4">供应商：</el-col>
+          <el-col :span="8">{{stockInInfo.supplierName}}</el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="4">申购规格：</el-col>
+          <el-col :span="8">{{stockInInfo.orderSpec}}</el-col>
+          <el-col :span="4">申购纯度：</el-col>
+          <el-col :span="8">{{stockInInfo.orderPurity}}</el-col>
+        </el-row>
+        <el-row>
+          <el-col><el-divider></el-divider></el-col>
+        </el-row>
+        <el-row>
+         <el-col>
+           <el-form ref="form" :model="stockInForm" label-width="80px">
+            <el-form-item label="入库数量">
+              <el-input-number v-model="stockInForm.reagentNum" style="width:200px" :min="1" :max="10000" :step="1" label="入库数量"></el-input-number>
+            </el-form-item>
+            <el-form-item label="入库纯度" class="formItem">
+              <el-select v-model="stockInForm.orderPurity" placeholder="请选择入库纯度" style="width:200px">
+                <el-option
+                  v-for="item in purityData"
+                  :key="item.purityID"
+                  :label="item.purityName"
+                  :value="item.purityName">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="入库规格"  class="formItem">
+              <el-select
+              v-model="stockInForm.orderSpec"
+              placeholder="请选择入库规格"
+              style="width:200px">
+                <el-option
+                  v-for="(item,index) in stockInInfo.specList"
+                  :key="index"
+                  :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+            </el-form-item>
+           </el-form>
+         </el-col>
+        </el-row>
+        <el-row><el-col></el-col></el-row>
+      </el-card>
+      <span slot="footer" class="dialog-footer">
+        <el-checkbox v-model="stockInForm.hasFinished" style="float:left">完成采购</el-checkbox>
+        <el-button @click="dialogStockInVisible = false">取 消</el-button>
+        <el-button type="primary" @click="saveStockIn">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -137,13 +215,99 @@ export default {
   name: 'ApplicationOrderManage',
   data () {
     return {
-      // 初始试剂信息模拟数据
+      dialogStockInVisible: false, // 入库窗口显示标志
+      stockInInfo: {},
+      stockInForm: {
+        orderSpec: '',
+        orderPurity: '',
+        hasFinished: true,
+        reagentNum: 0
+      },
       orderList: [],
+      purityData: [],
       orderDetail: [],
       expands: [] // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
     }
   },
   methods: {
+    saveStockIn: function () {
+      // 商品入库
+      axios({
+        method: 'post',
+        url: '/api/order/saveStockIn',
+        data: {
+          stockInInfo: this.stockInForm
+        }
+      })
+        .then((res) => {
+          this.dialogStockInVisible = false
+          if (res.data.result === 1) {
+            // 入库操作成功
+            this.loadDetail(this.stockInForm, [this.stockInForm])
+            this.$message({
+              message: res.data.msg,
+              type: 'success'
+            })
+          }
+          if (res.data.result === 2) {
+            // 入库操作成功，订单已完成
+            this.getOrderList()
+            this.$message({
+              message: res.data.msg,
+              type: 'success'
+            })
+          }
+          if (res.data.result === 3) {
+            // 部分入库成功
+            this.$message({
+              message: res.data.msg,
+              type: 'success'
+            })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
+    getPurityList: function () {
+      axios({
+        method: 'get',
+        url: '/api/puritySet/getPurityList'
+      })
+        .then((res) => {
+          this.purityData = res.data
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
+    handleChoice: function (row) {
+      // console.log(row)
+      this.stockInInfo = row
+      for (let i = 0; i < this.orderDetail.length; i++) {
+        if (this.orderDetail[i].orderDetailID === row.orderDetailID) {
+          this.stockInInfo.specList = this.orderDetail[i].reagentSpec.split(',')
+          break
+        }
+      }
+
+      this.stockInForm.reagentNum = row.orderNum
+      this.stockInForm.reagentID = row.reagentID
+      this.stockInForm.orderPurity = row.orderPurity
+      this.stockInForm.orderSpec = row.orderSpec
+      this.stockInForm.orderDetailID = row.orderDetailID
+      this.stockInForm.orderID = row.orderID
+
+      this.dialogStockInVisible = true
+    },
     handleStockIn: function (row) {
       // 入库处理
       if (this.$refs['orderTable'].expandRowKeys.length === 0) {
@@ -311,6 +475,9 @@ export default {
             if (this.orderDetail[i].reagentNum === null) {
               this.orderDetail[i].reagentNum = 0
             }
+            if (this.orderDetail[i].state === 1) {
+              this.orderDetail[i].disableChoice = true
+            }
           }
         })
         .catch((err) => {
@@ -324,16 +491,19 @@ export default {
   },
   mounted: function () {
     this.getOrderList()
+    this.getPurityList()
   }
 }
 </script>
 
 <style scoped>
-  .supplierDetail .el-row{
-    margin-bottom: 10px;
+  .box-card{
+    margin-top:-10px
   }
-  .detailTitle{
-    color: #99a9bf;
-    text-align: right;
+  .center-row{
+    margin: 10px 0
+  }
+  .formItem{
+    margin-top: -10px;
   }
 </style>

@@ -23,6 +23,7 @@ import ReagentExpend from '@/components/ReagentProcess/ReagentExpend'
 import DangerApprove from '@/components/ReagentProcess/DangerApprove'
 
 import OrderManage from '@/components/ReagentManage/OrderManage'
+import DamageReagent from '@/components/ReagentManage/DamageReagent'
 import OrderApprove from '@/components/ReagentManage/OrderApprove'
 import ApplicationManage from '@/components/ReagentManage/ApplicationManage'
 import ApplicationOrderManage from '@/components/ReagentManage/ApplicationOrderManage'
@@ -140,6 +141,10 @@ export default new Router({
         {
           path: '/OrderReagent',
           component: OrderReagent
+        },
+        {
+          path: '/DamageReagent',
+          component: DamageReagent
         },
         {
           path: '/OrderApprove',
