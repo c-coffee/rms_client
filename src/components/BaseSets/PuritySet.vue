@@ -255,8 +255,6 @@ export default {
                 method: 'post',
                 url: '/api/puritySet/editPurityInfo',
                 data: {
-                  // deptID: this.editForm.deptID,
-                  // deptName: this.editForm.deptName
                   purityInfo: this.editForm
                 }
               })

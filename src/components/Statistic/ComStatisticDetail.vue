@@ -4,7 +4,7 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>试剂报损管理</span>
+            <span>库存统计</span>
           </div>
           <el-row>
             <el-col :span="18">
@@ -71,42 +71,6 @@
                   {{ props.row.reagentNum }}
                 </el-col>
               </el-row>
-              <el-row>
-                <el-col :span="3" class="detailTitle">
-                  当前存量：
-                </el-col>
-                <el-col :span="9">
-                  {{ props.row.reagentDeptStore }}
-                </el-col>
-                <el-col :span="3" class="detailTitle">
-                  使用时间：
-                </el-col>
-                <el-col :span="9">
-                  {{ props.row.returnDate }}
-                </el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="3" class="detailTitle">
-                  使用用途：
-                </el-col>
-                <el-col :span="21">
-                  {{ props.row.returnReason }}
-                </el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="3" class="detailTitle">
-                  受理人：
-                </el-col>
-                <el-col :span="9">
-                  {{ props.row.receiverUserName }}
-                </el-col>
-                <el-col :span="3" class="detailTitle">
-                  拒绝原因：
-                </el-col>
-                <el-col :span="9">
-                  {{ props.row.rejectReason }}
-                </el-col>
-              </el-row>
               </div>
             </template>
           </el-table-column>
@@ -144,7 +108,7 @@
                 <el-button
                 size="mini"
                 type="primary"
-                @click="handleDamage(scope.$index, scope.row)">报损</el-button>
+                @click="handleDamage(scope.$index, scope.row)">使用明细</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -179,7 +143,7 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'DamageReagent',
+  name: 'ComStatisticDetail',
   data () {
     return {
       reagentDanger: [],

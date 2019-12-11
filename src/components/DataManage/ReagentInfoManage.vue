@@ -202,26 +202,10 @@
             <el-form-item
             label="CAS"
             label-width="100px"
-            prop="reagentName"
+            prop="CAS"
             >
               <el-input v-model="addForm.CAS" autocomplete="off"></el-input>
             </el-form-item>
-            <!-- <el-form-item
-            label="性状"
-            label-width="100px"
-            prop="reagentStateID"
-            :rules="[
-            {required: true, message:'性状不能为空', trigger: 'blur'}
-            ]">
-              <el-select v-model="addForm.reagentStateID" placeholder="请选择">
-                <el-option
-                  v-for="item in reagentState"
-                  :key="item.stateID"
-                  :label="item.stateName"
-                  :value="item.stateID">
-                </el-option>
-              </el-select>
-            </el-form-item> -->
           </el-col>
           <el-col :span="12">
             <el-form-item
@@ -351,22 +335,6 @@
             >
               <el-input v-model="editForm.CAS" autocomplete="off"></el-input>
             </el-form-item>
-            <!-- <el-form-item
-            label="性状"
-            label-width="100px"
-            prop="reagentStateID"
-            :rules="[
-            {required: true, message:'性状不能为空', trigger: 'blur'}
-            ]">
-              <el-select v-model="addForm.reagentStateID" placeholder="请选择">
-                <el-option
-                  v-for="item in reagentState"
-                  :key="item.stateID"
-                  :label="item.stateName"
-                  :value="item.stateID">
-                </el-option>
-              </el-select>
-            </el-form-item> -->
           </el-col>
           <el-col :span="12">
             <el-form-item
@@ -497,7 +465,7 @@ export default {
         } else {
           let flag = true
           for (let i = 0; i < this.reagentInfoData.length; i++) {
-            if (this.addForm.reagentName === this.reagentInfoData[i].reagentName) {
+            if (this.addForm.reagentName === this.reagentInfoData[i].reagentName && this.addForm.reagentTypeID === this.reagentInfoData[i].reagentTypeID) {
               flag = false
               break
             }

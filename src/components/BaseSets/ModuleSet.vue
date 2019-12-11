@@ -12,7 +12,7 @@
           node-key="moduleId"
           default-expand-all
           :expand-on-click-node="false">
-            <span class="custom-tree-node" slot-scope="{ node, data }">
+            <span class="custom-tree-node" slot-scope="{ node }">
               <span>{{ node.label }}</span>
               <span>
                 <el-button

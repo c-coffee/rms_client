@@ -249,21 +249,21 @@ export default {
       // 发放试剂
       if (row.appDetailState === 0 || row.appDetailState === 3) {
         urlAddr = '/api/application/providerReagent'
+
+        if (row.reagentNum < row.providerNum) {
+          this.$message({
+            message: '库存数量不够，无法发放！',
+            type: 'error'
+          })
+          return
+        }
       }
       // 已发放状态,撤回试剂
       if (row.appDetailState === 1) {
         urlAddr = '/api/application/rollbackProvider'
       }
 
-      if (row.reagentNum < row.providerNum) {
-        this.$message({
-          message: '库存数量不够，无法发放！',
-          type: 'error'
-        })
-        return
-      }
-
-      this.$confirm('您确定提交吗?', '提示', {
+      this.$confirm('您确定撤回发放吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -277,8 +277,7 @@ export default {
           appDetialID: row.appDetialID,
           providerNum: row.providerNum,
           providerSpec: row.providerSpec,
-          providerPurity: row.stockPurity,
-          stockID: row.stocksID,
+          providerPurity: row.appPurity,
           state: row.state
         }
         axios({

@@ -121,6 +121,10 @@
             </el-menu-item>
         </el-submenu>
         <el-submenu index="9">
+            <el-menu-item index="/ComStatistic" v-if="checkRank('BaseSet')">
+              <i class="el-icon-suitcase-1"></i>
+              <span slot="title">试剂库存</span>
+            </el-menu-item>
             <template slot="title" v-if="checkRank('BaseSet')">
               <i class="el-icon-location"></i>
               <span>统计分析</span>
@@ -128,10 +132,6 @@
             <el-menu-item index="9.1" v-if="checkRank('BaseSet')">
               <i class="el-icon-monitor"></i>
               <span slot="title"><router-link to="/" tag="span">科室库存</router-link></span>
-            </el-menu-item>
-            <el-menu-item index="9.2" v-if="checkRank('BaseSet')">
-              <i class="el-icon-suitcase-1"></i>
-              <span slot="title">试剂库存</span>
             </el-menu-item>
             <el-menu-item index="9.3" v-if="checkRank('BaseSet')">
               <i class="el-icon-setting"></i>

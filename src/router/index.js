@@ -32,6 +32,9 @@ import ProvideReagent from '@/components/ReagentManage/ProvideReagent'
 import OrderApplication from '@/components/ReagentManage/OrderApplication'
 import OrderReagent from '@/components/ReagentManage/OrderReagent'
 
+import ComStatistic from '@/components/Statistic/ComStatistic'
+import ComStatisticDetail from '@/components/Statistic/ComStatisticDetail'
+
 Vue.use(Router)
 
 export default new Router({
@@ -149,6 +152,14 @@ export default new Router({
         {
           path: '/OrderApprove',
           component: OrderApprove
+        },
+        {
+          path: '/ComStatistic',
+          component: ComStatistic
+        },
+        {
+          path: '/ComStatisticDetail',
+          component: ComStatisticDetail
         }
       ]
     }

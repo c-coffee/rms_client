@@ -215,6 +215,7 @@ export default {
   name: 'ApplicationOrderManage',
   data () {
     return {
+      currentOrder: {}, // 当前正在处理的订单
       dialogStockInVisible: false, // 入库窗口显示标志
       stockInInfo: {},
       stockInForm: {
@@ -243,7 +244,7 @@ export default {
           this.dialogStockInVisible = false
           if (res.data.result === 1) {
             // 入库操作成功
-            this.loadDetail(this.stockInForm, [this.stockInForm])
+            this.loadDetail(this.currentOrder, [this.currentOrder])
             this.$message({
               message: res.data.msg,
               type: 'success'
@@ -310,6 +311,7 @@ export default {
     },
     handleStockIn: function (row) {
       // 入库处理
+      this.currentOrder = row
       if (this.$refs['orderTable'].expandRowKeys.length === 0) {
         this.loadDetail(row, [row])
       } else {
@@ -471,11 +473,14 @@ export default {
       })
         .then((res) => {
           this.orderDetail = res.data
+          console.log(row)
           for (let i = 0; i < this.orderDetail.length; i++) {
             if (this.orderDetail[i].reagentNum === null) {
               this.orderDetail[i].reagentNum = 0
             }
-            if (this.orderDetail[i].state === 1) {
+            if (this.orderDetail[i].state === 0 && row.stepID === 16) {
+              this.orderDetail[i].disableChoice = false
+            } else {
               this.orderDetail[i].disableChoice = true
             }
           }
