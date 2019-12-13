@@ -36,8 +36,8 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentUnit"
-                label="单位"
+                prop="typeName"
+                label="类型"
                 align="center">
               </el-table-column>
               <el-table-column
@@ -53,11 +53,6 @@
               <el-table-column
                 prop="appNum"
                 label="数量"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                prop="reagentNum"
-                label="库存"
                 align="center">
               </el-table-column>
               <el-table-column

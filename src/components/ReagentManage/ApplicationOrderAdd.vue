@@ -5,6 +5,7 @@
         <el-card>
           <div slot="header">
             <span>试剂申购单</span>
+            <el-button style="float: right; padding: 3px 30px; margin-left:20px" type="info"><router-link to="/ApplicationOrderManage" tag="span">返 回</router-link></el-button>
             <el-button @click.stop="orderSaveAndSubmit" style="float: right; padding: 3px 10px" type="text">保存并提交</el-button>
             <el-button @click.stop="orderSaveNotSubmit" style="float: right; padding: 3px 10px" type="text">保存</el-button>
           </div>
@@ -20,14 +21,13 @@
               </el-table-column>
               <el-table-column
                 prop="reagentName"
-                label="试剂名称"
+                label="名称"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentUnit"
-                label="单位"
-                align="center"
-                width="55px">
+                prop="typeName"
+                label="类型"
+                align="center">
               </el-table-column>
               <el-table-column
                 prop="orderSpec"
@@ -66,7 +66,7 @@
           <el-row>
             <el-col :span="18">
               <div>
-                查询&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:100px">
+                查询&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:130px">
                 <el-option
                   v-for="item in reagentType"
                   :key="item.typeID"
@@ -174,20 +174,20 @@
               </el-table-column>
               <el-table-column
                 prop="reagentName"
-                label="试剂名称"
+                label="名称"
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentUnit"
-                label="单位"
+                prop="typeName"
+                label="类型"
                 align="center"
-                width="60px">
+                width="95px">
               </el-table-column>
               <el-table-column
                 prop="reagentNum"
-                label="库存量"
+                label="库存"
                 align="center"
-                width="70px">
+                width="60px">
               </el-table-column>
               <el-table-column
                 prop="reagentSpec"
@@ -195,13 +195,12 @@
                 align="center"
                 width="120px">
                 <template slot-scope="scope">
-                  <el-select v-model="scope.row.choiceSpec" @change="getStock(scope.row, scope.$index)">
+                  <el-select size="mini" v-model="scope.row.choiceSpec" @change="getStock(scope.row, scope.$index)">
                     <el-option
                       v-for="(item,index) in scope.row.specList"
                       :key="index"
                       :label="item"
-                      :value="item"
-                    >
+                      :value="item">
                     </el-option>
                   </el-select>
                 </template>
@@ -212,7 +211,7 @@
                 align="center"
                 width="138px">
                 <template slot-scope="scope">
-                  <el-select v-model="scope.row.reagentPurity" @visible-change="$forceUpdate()" @change="getStock(scope.row, scope.$index)">
+                  <el-select :disabled="scope.row.purityDisabled" size="mini" v-model="scope.row.orderPurity" @visible-change="$forceUpdate()" @change="getStock(scope.row, scope.$index)">
                     <el-option
                       v-for="item in reagentPurity"
                       :key="item.purityID"
@@ -291,10 +290,18 @@ export default {
   methods: {
     // 选择纯度和规格后，获得库存数量
     getStock (rowInfo, rowIndex) {
+      if (rowInfo.reagentTypeID === 1 || rowInfo.reagentTypeID === 4) {
+        if (rowInfo.choiceSpec === '' || rowInfo.orderPurity === '') {
+          // 试剂和易制毒 需要选择了规格和纯度才能统一查询
+          rowInfo.reagentName += ' ' // 用以解决屏幕不刷新bug
+          return
+        }
+      }
       let stockInfo = {
         reagentID: rowInfo.reagentID,
         stockSpec: rowInfo.choiceSpec,
-        stockPurity: rowInfo.reagentPurity
+        stockPurity: rowInfo.orderPurity,
+        reagentTypeID: rowInfo.reagentTypeID
       }
       axios({
         method: 'get',
@@ -304,15 +311,8 @@ export default {
         }
       })
         .then((res) => {
-          let tempNum
-          if (res.data.results.length === 0) {
-            tempNum = 0
-            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
-          } else {
-            tempNum = res.data.results[0].reagentNum
-            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
-          }
-          rowInfo.reagentNum = tempNum
+          rowInfo.reagentNum = res.data.countNum
+          rowInfo.reagentName += ' '
         })
         .catch((err) => {
           console.log(err)
@@ -340,7 +340,7 @@ export default {
         })
           .then((res) => {
             this.orderDetail = res.data
-            console.log(res.data)
+            // console.log(res.data)
           })
           .catch((err) => {
             console.log(err)
@@ -383,22 +383,12 @@ export default {
         return
       }
 
-      // 申购不进行危化判断
-      // for (let i = 0; i < this.orderDetail.length; i++) {
-      //   // **** 写死了判断危化品的条件为1
-      //   if (this.orderDetail[i].reagentDangerID !== 1) {
-      //     this.orderInfo.hasDanger = true
-      //     break
-      //   }
-      // }
-
       let urlAddr
       if (this.orderInfo.orderID === 0) {
         urlAddr = '/api/order/orderSave'
       } else {
         urlAddr = '/api/order/orderModify'
       }
-      console.log(this.orderDetail)
       axios({
         method: 'post',
         url: urlAddr,
@@ -468,10 +458,36 @@ export default {
       })
         .then((res) => {
           // console.log(res)
+          let tempData = res.data.data
           this.stockInfoData = res.data.data
-          for (let i = 0; i < this.stockInfoData.length; i++) {
-            this.stockInfoData[i].specList = this.stockInfoData[i].reagentSpec.split(',')
+          for (let i = 0; i < tempData.length; i++) {
+            tempData[i].specList = tempData[i].reagentSpec.split(',')
+            tempData[i].orderPurity = ''
+            tempData[i].choiceSpec = ''
+            switch (tempData[i].reagentTypeID) {
+              case 1:
+                // 试剂，纯度可选
+                tempData.purityDisabled = false
+                tempData.orderPurity = ''
+                break
+              case 2:
+                // 耗材，纯度不可选
+                tempData.purityDisabled = true
+                tempData.orderPurity = '/'
+                break
+              case 3:
+                // 标准物质，纯度不可选
+                tempData.purityDisabled = true
+                tempData.orderPurity = '/'
+                break
+              case 4:
+                // 易制毒，纯度可选
+                tempData.purityDisabled = false
+                tempData.orderPurity = ''
+                break
+            }
           }
+          this.stockInfoData = tempData
           this.pageCount = res.data.count
         })
         .catch((err) => {
@@ -503,14 +519,15 @@ export default {
     handleEdit: function (index, row) {
     },
     handleAdd: function (index, row) {
-      if (typeof row.choiceSpec === 'undefined') {
+      console.log(row)
+      if (row.choiceSpec === '') {
         this.$message({
           type: 'error',
           message: '请选择试剂规格!'
         })
         return
       }
-      if (typeof row.reagentPurity === 'undefined') {
+      if (row.orderPurity === '') {
         this.$message({
           type: 'error',
           message: '请选择试剂纯度!'
@@ -529,9 +546,11 @@ export default {
         // console.log(this.appDetail)
         let flag = true
         for (let reagent of this.orderDetail) {
-          if (reagent.reagentID === row.reagentID && reagent.orderSpec === row.choiceSpec && reagent.orderPurity === row.reagentPurity) {
+          if (reagent.reagentID === row.reagentID && reagent.orderSpec === row.choiceSpec && reagent.orderPurity === row.orderPurity) {
             reagent.orderNum += row.orderNum
-            reagent.remark = row.remark
+            if (reagent.remark !== '') {
+              reagent.remark = row.remark
+            }
             flag = false
           }
         }
@@ -540,9 +559,10 @@ export default {
           this.orderDetail.push({
             reagentID: row.reagentID,
             reagentName: row.reagentName,
+            typeName: row.typeName,
             reagentUnit: row.reagentUnit,
             orderSpec: row.choiceSpec,
-            orderPurity: row.reagentPurity,
+            orderPurity: row.orderPurity,
             orderNum: row.orderNum,
             reagentDangerID: row.reagentDangerID,
             dangerName: row.dangerName,

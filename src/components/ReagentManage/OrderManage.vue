@@ -36,10 +36,10 @@
                   align="center">
                 </el-table-column>
                 <el-table-column
-                  prop="reagentUnit"
-                  label="单位"
+                  prop="typeName"
+                  label="类型"
                   align="center"
-                  width="50px">
+                  width="100px">
                 </el-table-column>
                 <el-table-column
                   prop="orderPurity"
@@ -52,15 +52,10 @@
                   align="center">
                 </el-table-column>
                 <el-table-column
-                  prop="reagentNum"
-                  label="库存"
-                  align="center"
-                  width="50px">
-                </el-table-column>
-                <el-table-column
                   prop="orderNum"
-                  label="申购数量"
-                  align="center">
+                  label="申购数"
+                  align="center"
+                  width="60px">
                 </el-table-column>
                 <el-table-column
                   prop="supplierName"
@@ -71,6 +66,12 @@
                   label="操作"
                   align="center">
                   <template slot-scope="scope">
+                    <el-button
+                    size="mini"
+                    type="text"
+                    round
+                    :disabled="scope.row.disableModify"
+                    @click="handleChoice(scope.row)">库存</el-button>
                     <el-button
                     size="mini"
                     type="primary"

@@ -36,11 +36,6 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentUnit"
-                label="单位"
-                align="center">
-              </el-table-column>
-              <el-table-column
                 prop="appSpec"
                 label="规格"
                 align="center">
@@ -90,11 +85,16 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="stepName"
-              label="当前流程"
-              :filters="[{text:'待提交',value:'待提交'},{text:'待审核',value:'待审核'},{text:'已驳回',value:'已驳回'},{text:'待受理',value:'待受理'}]"
-              :filter-method="filterState"
-              >
+          prop="stepName"
+          label="当前流程"
+          :filters="[{text:'待提交',value:'待提交'},{text:'待审核',value:'待审核'},{text:'已驳回',value:'已驳回'},{text:'待受理',value:'待受理'}]"
+          :filter-method="filterState"
+          >
+            <template slot-scope="scope">
+              <el-tooltip :disabled="scope.row.disabledRejectInfo" class="item" effect="dark" :content="scope.row.approveReason" placement="top-start">
+                <el-tag :type="scope.row.tagType">{{scope.row.stepName}}</el-tag>
+              </el-tooltip>
+            </template>
           </el-table-column>
           <el-table-column
             label="操作"
@@ -269,6 +269,14 @@ export default {
       })
         .then((res) => {
           this.reagentAppDetail = res.data
+          for (let i = 0; i < this.reagentAppDetail.length; i++) {
+            if (this.reagentAppDetail[i].stepID === 3) {
+              this.reagentAppDetail[i].tagType = 'danger' // 设置当前步骤所用模版
+              this.reagentAppDetail[i].disabledRejectInfo = false
+            } else {
+              this.reagentAppDetail[i].disabledRejectInfo = true
+            }
+          }
         })
         .catch((err) => {
           console.log(err)

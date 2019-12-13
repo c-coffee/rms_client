@@ -7,28 +7,41 @@
             <span>试剂信息管理</span>
             <el-button @click.stop="showAddDialog" style="float: right; padding: 3px 0" type="text">添加</el-button>
           </div>
-          <div>
-            <span>查询：</span>
-            <el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:120px">
-              <el-option
-                v-for="item in reagentType"
-                :key="item.typeID"
-                :label="item.typeName"
-                :value="item.typeID">
-              </el-option>
-            </el-select>
-            <el-select v-model="searchInfo.searchReagentDangerID" placeholder="危化类别"  size="small" style="width:120px">
-              <el-option
-                v-for="item in reagentDanger"
-                :key="item.dangerID"
-                :label="item.dangerName"
-                :value="item.dangerID">
-              </el-option>
-            </el-select>
-             <el-input style="width:350px" placeholder="请输入试剂名称、CAS或试剂拼音简码" v-model="searchInfo.searchReagent" size="small">
-              <el-button slot="append" icon="el-icon-search" @click="getReagentInfoList"></el-button>
-            </el-input>
-          </div>
+            <el-row>
+              <el-col :span="18">
+                <span>查询：</span>
+                <el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:120px">
+                  <el-option
+                    v-for="item in reagentType"
+                    :key="item.typeID"
+                    :label="item.typeName"
+                    :value="item.typeID">
+                  </el-option>
+                </el-select>
+                <el-select v-model="searchInfo.searchReagentDangerID" placeholder="危化类别"  size="small" style="width:120px">
+                  <el-option
+                    v-for="item in reagentDanger"
+                    :key="item.dangerID"
+                    :label="item.dangerName"
+                    :value="item.dangerID">
+                  </el-option>
+                </el-select>
+                <el-input style="width:350px" placeholder="请输入试剂名称、CAS或试剂拼音简码" v-model="searchInfo.searchReagent" size="small">
+                  <el-button slot="append" icon="el-icon-search" @click="getReagentInfoList"></el-button>
+                </el-input>
+              </el-col>
+              <el-col :span="6">
+                 <el-pagination
+                  @current-change="handleCurrentChange"
+                  layout="prev, pager, next"
+                  style="float:right"
+                  :pager-count="5"
+                  :page-size="this.pageSize"
+                  :current-page="this.currentPage"
+                  :total="this.pageCount">
+                </el-pagination>
+              </el-col>
+            </el-row>
           <el-divider></el-divider>
           <el-table
           :data="reagentInfoData"
@@ -75,23 +88,17 @@
                   {{ props.row.reagentSpec }}
                 </el-col>
                 <el-col :span="3" class="detailTitle">
-                  单位：
-                </el-col>
-                <el-col :span="9">
-                  {{ props.row.reagentUnit }}
-                </el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="3" class="detailTitle">
                   危化类别：
                 </el-col>
                 <el-col :span="9">
                   {{ props.row.dangerName }}
                 </el-col>
+              </el-row>
+              <el-row>
                 <el-col :span="3" class="detailTitle">
                   制造商：
                 </el-col>
-                <el-col :span="9">
+                <el-col :span="21">
                   {{ props.row.reagentProduct }}
                 </el-col>
               </el-row>
@@ -120,11 +127,6 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="reagentUnit"
-              label="单位"
-              align="center">
-          </el-table-column>
-          <el-table-column
             label="操作"
             width="150px"
             align="center">
@@ -140,16 +142,6 @@
               </template>
               </el-table-column>
           </el-table>
-          <div class="bottom">
-            <el-pagination
-              @current-change="handleCurrentChange"
-              layout="prev, pager, next"
-              style="float:right"
-              :page-size="this.pageSize"
-              :current-page="this.currentPage"
-              :total="this.pageCount">
-            </el-pagination>
-          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -186,7 +178,7 @@
             {required: true, message:'试剂类型不能为空', trigger: 'blur'}
             ]"
             >
-              <el-select v-model="addForm.reagentTypeID" placeholder="请选择">
+              <el-select v-model="addForm.reagentTypeID" placeholder="请选择" @change="changeType">
                 <el-option
                   v-for="item in reagentType"
                   :key="item.typeID"
@@ -215,7 +207,7 @@
             :rules="[
             {required: true, message:'危化类别不能为空', trigger: 'blur'}
             ]">
-              <el-select v-model="addForm.reagentDangerID" placeholder="请选择">
+              <el-select v-model="addForm.reagentDangerID" placeholder="请选择" :disabled="addDangerDisable">
                 <el-option
                   v-for="item in reagentDanger"
                   :key="item.dangerID"
@@ -229,13 +221,13 @@
          <el-row>
           <el-col :span="12">
             <el-form-item
-            label="单位"
+            label="拼音短码"
             label-width="100px"
-            prop="reagentUnit"
+            prop="reagentShortCode"
             :rules="[
-            {required: true, message:'单位不能为空', trigger: 'blur'}
+            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
             ]">
-              <el-input v-model="addForm.reagentUnit" autocomplete="off"></el-input>
+              <el-input v-model="addForm.reagentShortCode" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -247,20 +239,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-         <el-row>
-          <el-col :span="24">
-            <el-form-item
-            label="拼音短码"
-            label-width="100px"
-            prop="reagentShortCode"
-            :rules="[
-            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
-            ]">
-              <el-input v-model="addForm.reagentShortCode" autocomplete="off"></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-                <el-row>
+        <el-row>
           <el-col :span="24">
             <el-form-item
             label="规格"
@@ -315,7 +294,7 @@
             {required: true, message:'试剂类型不能为空', trigger: 'blur'}
             ]"
             >
-              <el-select v-model="addForm.reagentTypeID" placeholder="请选择">
+              <el-select v-model="editForm.reagentTypeID" placeholder="请选择" @change="modifyType">
                 <el-option
                   v-for="item in reagentType"
                   :key="item.typeID"
@@ -344,7 +323,7 @@
             :rules="[
             {required: true, message:'危化类别不能为空', trigger: 'blur'}
             ]">
-              <el-select v-model="editForm.reagentDangerID" placeholder="请选择">
+              <el-select v-model="editForm.reagentDangerID" placeholder="请选择" :disabled="modifyDangerDisable">
                 <el-option
                   v-for="item in reagentDanger"
                   :key="item.dangerID"
@@ -358,13 +337,13 @@
          <el-row>
           <el-col :span="12">
             <el-form-item
-            label="单位"
+            label="拼音短码"
             label-width="100px"
-            prop="reagentUnit"
+            prop="reagentShortCode"
             :rules="[
-            {required: true, message:'单位不能为空', trigger: 'blur'}
+            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
             ]">
-              <el-input v-model="editForm.reagentUnit" autocomplete="off"></el-input>
+              <el-input v-model="editForm.reagentShortCode" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -377,19 +356,6 @@
           </el-col>
         </el-row>
          <el-row>
-          <el-col :span="24">
-            <el-form-item
-            label="拼音短码"
-            label-width="100px"
-            prop="reagentShortCode"
-            :rules="[
-            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
-            ]">
-              <el-input v-model="editForm.reagentShortCode" autocomplete="off"></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-                <el-row>
           <el-col :span="24">
             <el-form-item
             label="规格"
@@ -420,6 +386,8 @@ export default {
   name: 'DepartmentSet',
   data () {
     return {
+      addDangerDisable: true,
+      modifyDangerDisable: true,
       searchInfo: {
         searchReagentTypeID: '',
         searchReagentDangerID: '',
@@ -427,12 +395,14 @@ export default {
         searchReagent: ''
       },
       currentPage: 1,
-      pageSize: 8,
+      pageSize: 10,
       pageCount: 0,
       // 初始试剂信息模拟数据
       reagentInfoData: [],
       addForm: {
-        reagentSpec: ''
+        reagentSpec: '',
+        reagentDangerID: 0,
+        CAS: ''
       },
       editForm: {
         reagentSpec: ''
@@ -446,6 +416,30 @@ export default {
     }
   },
   methods: {
+    modifyType (value) {
+      // 当用户选择了易制毒（爆） value===4 时，危化类别的其它选项才可选，否则为 /
+      if (value === 4) {
+        this.modifyDangerDisable = false
+        this.editForm.reagentDangerID = 0
+      } else {
+        this.modifyDangerDisable = true
+        this.editForm.reagentDangerID = 1
+      }
+    },
+    changeType (value) {
+      // 当用户选择了易制毒（爆） value===4 时，危化类别的其它选项才可选，否则为 /
+      if (value === 4) {
+        this.addDangerDisable = false
+        this.addForm.reagentDangerID = 0
+      } else {
+        this.addDangerDisable = true
+        this.addForm.reagentDangerID = 1
+      }
+
+      if (value === 2) {
+        this.addForm.CAS = '/'
+      }
+    },
     handleCurrentChange (currentPage) {
       this.currentPage = currentPage
       this.getReagentInfoList()
@@ -471,6 +465,7 @@ export default {
             }
           }
           if (flag) {
+            console.log(this.addForm)
             axios({
               method: 'post',
               url: '/api/reagentInfo/addReagentInfo',
@@ -520,14 +515,6 @@ export default {
             type: 'error'
           })
         } else {
-          // 做了分页之后，页面端验证是否重名或重复CAS的方法没有作用了。
-          // let flag = true
-          // for (let i = 0; i < this.reagentInfoData.length; i++) {
-          //   if (this.editForm.reagentName === this.reagentInfoData[i].reagentName && this.editForm.reagentID !== this.reagentInfoData[i].reagentID) {
-          //     flag = false
-          //     break
-          //   }
-          // }
           axios({
             method: 'post',
             url: '/api/reagentInfo/editReagentinfo',
@@ -570,9 +557,9 @@ export default {
           this.reagentDanger = res.data.reagentDanger
           this.reagentState = res.data.reagentState
           this.reagentType = res.data.reagentType
-          this.reagentDanger.unshift({dangerID: 0, dangerName: '全部', state: 1})
-          this.reagentState.unshift({stateID: 0, stateName: '全部', state: 1})
-          this.reagentType.unshift({typeID: 0, typeName: '全部', state: 1})
+          this.reagentDanger.unshift({dangerID: 0, dangerName: '请选择', state: 1})
+          this.reagentState.unshift({stateID: 0, stateName: '请选择', state: 1})
+          this.reagentType.unshift({typeID: 0, typeName: '请选择', state: 1})
           // console.log(res)
           this.getReagentInfoList()
         })
@@ -625,32 +612,6 @@ export default {
         }
       })
         .then((res) => {
-          // ** 改为从服务器端获取
-          // 通过id获取类别，性状，危化品名称
-          // let rgType = this.reagentType
-          // let rgDanger = this.reagentDanger
-          // let rgState = this.reagentState
-          // for (let j = 0; j < res.data.length; j++) {
-          //   for (let i = 0; i < rgType.length; i++) {
-          //     if (res.data[j].reagentTypeID === rgType[i].typeID) {
-          //       res.data[j].reagentTypeName = rgType[i].typeName
-          //       break
-          //     }
-          //   }
-          //   for (let i = 0; i < rgState.length; i++) {
-          //     if (res.data[j].reagentStateID === rgState[i].stateID) {
-          //       res.data[j].reagentStateName = rgState[i].stateName
-          //       break
-          //     }
-          //   }
-          //   for (let i = 0; i < rgDanger.length; i++) {
-          //     if (res.data[j].reagentDangerID === rgDanger[i].dangerID) {
-          //       res.data[j].reagentDangerName = rgDanger[i].dangerName
-          //       break
-          //     }
-          //   }
-          // }
-          // console.log(res)
           this.reagentInfoData = res.data.data
           this.pageCount = res.data.count
           // this.getBaseFullName()

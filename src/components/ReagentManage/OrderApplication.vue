@@ -5,8 +5,9 @@
         <el-card>
           <div slot="header">
             <span>申请采购</span>
-            <el-button style="float: right; padding: 3px 10px" type="text" @click="orderApplication">一键申购</el-button>
-            <el-button style="float: right; padding: 3px 10px" type="text"><router-link to="/ApplicationManage" tag="span">返回</router-link></el-button>
+            <el-button style="float: right; padding: 3px 10px; margin-left:15px" type="info"><router-link to="/ApplicationManage" tag="span">返回</router-link></el-button>
+            <el-button style="float: right; padding: 3px 10px" type="text" @click="orderApplication(true)">一键申购</el-button>
+            <el-button style="float: right; padding: 3px 10px" type="text" @click="orderApplication(false)">保存</el-button>
           </div>
           <el-row class="appInfo">
             <el-col :span="2">申领单号：</el-col>
@@ -45,16 +46,11 @@
               <el-table-column
                 prop="appPurity"
                 label="纯度"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                prop="reagentUnit"
-                label="单位"
                 align="center"
-                width="55px">
+                width="90px">
               </el-table-column>
               <el-table-column
-                prop="reagentNum"
+                prop="stockNum"
                 label="库存量"
                 align="center"
                 width="70px">
@@ -66,10 +62,16 @@
                 width="70px">
               </el-table-column>
               <el-table-column
+                prop="remark"
+                label="备注信息"
+                align="center"
+                width="70px">
+              </el-table-column>
+              <el-table-column
                 prop="reagentSpec"
                 label="申购规格"
                 align="center"
-                width="120px">
+                width="150px">
                 <template slot-scope="scope">
                   <el-select
                     v-model="scope.row.providerSpec"
@@ -89,7 +91,7 @@
                 prop="providerNum"
                 label="申购数量"
                 align="center"
-                width="130px">
+                width="150px">
                 <template slot-scope="scope">
                   <el-input-number style="width:110px" v-model="scope.row.providerNum"  value=0 :precision="2" :step="1" :min="0" :max="10000" @change="changeEditInput" size="mini"></el-input-number>
                 </template>
@@ -106,11 +108,6 @@
               align="center"
               prop="state">
                 <template slot-scope="scope">
-                  <!-- <el-button
-                  :disabled="scope.row.disabled"
-                  size="mini"
-                  @click="provideReagent(scope.row)"
-                  type="primary">{{opText(scope.row.appDetailState)}}</el-button> -->
                   <el-checkbox v-model="scope.row.checked" ></el-checkbox>
                 </template>
               </el-table-column>
@@ -158,10 +155,12 @@ export default {
       return ''
     },
     getStock (rowInfo, rowIndex) {
+      console.log(rowInfo)
       let stockInfo = {
         reagentID: rowInfo.reagentID,
         stockSpec: rowInfo.providerSpec,
-        stockPurity: rowInfo.appPurity
+        stockPurity: rowInfo.appPurity,
+        reagentTypeID: rowInfo.reagentTypeID
       }
       axios({
         method: 'get',
@@ -171,15 +170,8 @@ export default {
         }
       })
         .then((res) => {
-          let tempNum
-          if (res.data.results.length === 0) {
-            tempNum = 0
-            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
-          } else {
-            tempNum = res.data.results[0].reagentNum
-            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
-          }
-          rowInfo.reagentNum = tempNum
+          rowInfo.stockNum = res.data.countNum
+          rowInfo.reagentName = rowInfo.reagentName + ' '
         })
         .catch((err) => {
           console.log(err)
@@ -208,11 +200,9 @@ export default {
           .then((res) => {
             this.appDetail = res.data
             for (let i = 0; i < this.appDetail.length; i++) {
-              if (this.appDetail[i].reagentNum === null) {
-                this.appDetail[i].reagentNum = 0
-              }
+              this.appDetail[i].stockNum = ''
               this.appDetail[i].providerNum = this.appDetail[i].appNum
-              this.appDetail[i].providerSpec = this.appDetail[i].appSpec
+              this.appDetail[i].providerSpec = ''
               this.appDetail[i].specList = this.appDetail[i].reagentSpec.split(',')
               switch (this.appDetail[i].appDetailState) {
                 case 0:
@@ -242,16 +232,32 @@ export default {
           })
       }
     },
-    orderApplication () {
+    orderApplication (flag) {
       // 1. 获取需要申购的试剂
       let orderList = []
       for (let i = 0; i < this.appDetail.length; i++) {
         if (this.appDetail[i].checked) {
           let temp = {}
+          // 检验是否选择申购规格 和 申购数量
+          if (this.appDetail[i].providerNum === 0) {
+            this.$message({
+              message: '请输入' + this.appDetail[i].reagentName + '的申购数量！',
+              type: 'error'
+            })
+            return
+          }
+          if (this.appDetail[i].providerSpec === '') {
+            this.$message({
+              message: '请选择' + this.appDetail[i].reagentName + '的申购规格！',
+              type: 'error'
+            })
+            return
+          }
           temp.reagentID = this.appDetail[i].reagentID
           temp.orderNum = this.appDetail[i].providerNum
           temp.orderSpec = this.appDetail[i].appSpec
           temp.orderPurity = this.appDetail[i].appPurity
+          temp.remark = this.appDetail[i].remark
           orderList.push(temp)
         }
       }
@@ -275,7 +281,7 @@ export default {
           url: '/api/order/oneKeySave',
           data: {
             orderList: orderList,
-            isSubmit: true
+            isSubmit: flag
           }
         })
           .then((res) => {
@@ -300,7 +306,8 @@ export default {
                 message: res.data.msg,
                 type: 'success'
               })
-              this.initAppInfo()
+              // this.initAppInfo()
+              this.$router.push({path: '/ApplicationManage'})
             } else {
               this.$message({
                 message: res.data.msg,
@@ -315,78 +322,6 @@ export default {
         })
       })
     },
-    // 发放试剂
-    // provideReagent (row) {
-    //   // todo: 加入判断，如果当前状态为已经发送，点击撤销则回到待发送状态
-    //   let urlAddr
-    //   // 发放试剂
-    //   if (row.appDetailState === 0 || row.appDetailState === 3) {
-    //     urlAddr = '/api/application/providerReagent'
-    //   }
-    //   // 已发放状态,撤回试剂
-    //   if (row.appDetailState === 1) {
-    //     urlAddr = '/api/application/rollbackProvider'
-    //   }
-
-    //   if (row.reagentNum < row.providerNum) {
-    //     this.$message({
-    //       message: '库存数量不够，无法发放！',
-    //       type: 'error'
-    //     })
-    //     return
-    //   }
-
-    //   this.$confirm('您确定提交吗?', '提示', {
-    //     confirmButtonText: '确定',
-    //     cancelButtonText: '取消',
-    //     type: 'warning'
-    //   }).then(() => {
-    //     // 未发放和已退回状态
-    //     // console.log(row)
-    //     // 判断库存量是否足够发放
-    //     let providerInfo = {
-    //       appID: row.appID,
-    //       reagentID: row.reagentID,
-    //       appDetialID: row.appDetialID,
-    //       providerNum: row.providerNum,
-    //       providerSpec: row.providerSpec,
-    //       providerPurity: row.stockPurity,
-    //       stockID: row.stocksID,
-    //       state: row.state
-    //     }
-    //     axios({
-    //       method: 'post',
-    //       url: urlAddr,
-    //       data: {
-    //         provider: providerInfo
-    //       }
-    //     })
-    //       .then((res) => {
-    //         if (res.data.result === 1) {
-    //           // 如果成功，则跳转到申请单列表界面
-    //           this.$message({
-    //             message: res.data.msg,
-    //             type: 'success'
-    //           })
-    //           this.initAppInfo()
-    //         } else {
-    //           this.$message({
-    //             message: res.data.msg,
-    //             type: 'error'
-    //           })
-    //         }
-    //       })
-    //   }).catch(() => {
-    //     this.$message({
-    //       type: 'info',
-    //       message: '已取消提交'
-    //     })
-    //   })
-    // },
-    // handleCurrentChange (currentPage) {
-    //   this.currentPage = currentPage
-    //   this.getStocksList()
-    // },
     changeEditInput () {
       this.$forceUpdate()
     },

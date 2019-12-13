@@ -4,7 +4,7 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>危化审核管理</span>
+            <span>申领审核</span>
           </div>
           <el-table
           :data="reagentAppDetail"
@@ -35,8 +35,8 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentUnit"
-                label="单位"
+                prop="typeName"
+                label="类型"
                 align="center">
               </el-table-column>
               <el-table-column
@@ -79,7 +79,7 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="approverName"
+              prop="userRealName"
               label="审核人"
               align="center">
           </el-table-column>
@@ -211,7 +211,6 @@ export default {
       })
         .then((res) => {
           this.reagentList = res.data
-          // console.log(res)
         })
         .catch((err) => {
           console.log(err)
@@ -306,6 +305,7 @@ export default {
       })
         .then((res) => {
           this.reagentAppDetail = res.data
+          console.log(res.data)
         })
         .catch((err) => {
           console.log(err)

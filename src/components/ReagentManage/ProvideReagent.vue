@@ -45,25 +45,20 @@
               <el-table-column
                 prop="appPurity"
                 label="纯度"
-                align="center">
-              </el-table-column>
-              <el-table-column
-                prop="appNum"
-                label="申领数量"
                 align="center"
                 width="70px">
               </el-table-column>
               <el-table-column
-                prop="reagentUnit"
-                label="单位"
+                prop="appNum"
+                label="申领量"
                 align="center"
-                width="55px">
+                width="60px">
               </el-table-column>
               <el-table-column
                 prop="reagentNum"
                 label="库存量"
                 align="center"
-                width="70px">
+                width="60px">
               </el-table-column>
               <el-table-column
                 prop="reagentSpec"
@@ -87,9 +82,31 @@
                 </template>
               </el-table-column>
               <el-table-column
+                prop="reagentSpec"
+                label="备案号/批号"
+                align="center"
+                width="150px">
+                <template slot-scope="scope">
+                  <el-select
+                  :disabled="scope.row.readonly"
+                    v-model="scope.row.providerSpec"
+                    size="mini"
+                    @change="getStock(scope.row, scope.$index)">
+                    <el-option
+                      v-for="(item,index) in scope.row.specList"
+                      :key="index"
+                      :label="item"
+                      :value="item"
+                    >
+                    </el-option>
+                  </el-select>
+                </template>
+              </el-table-column>
+              <el-table-column
                 prop="providerNum"
                 label="发放数量"
-                align="center">
+                align="center"
+                width="150px">
                 <template slot-scope="scope">
                   <el-input-number :disabled="scope.row.readonly" style="width:110px" v-model="scope.row.providerNum"  value=0 :precision="2" :step="1" :min="0" :max="10000" @change="changeEditInput" size="mini"></el-input-number>
                 </template>

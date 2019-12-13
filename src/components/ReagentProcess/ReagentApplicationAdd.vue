@@ -5,8 +5,9 @@
         <el-card>
           <div slot="header">
             <span>试剂申领</span>
+            <el-button style="float: right; padding: 3px 30px; margin-left:20px" type="info"><router-link to="/ReagentApplication" tag="span">返 回</router-link></el-button>
             <el-button @click.stop="appSaveAndSubmit" style="float: right; padding: 3px 10px" type="text">保存并提交</el-button>
-            <el-button @click.stop="appSaveNotSubmit" style="float: right; padding: 3px 10px" type="text">保存</el-button>
+            <el-button @click.stop="appSaveNotSubmit" style="float: right; padding: 3px 10px" type="text">保 存</el-button>
           </div>
           <el-table
             :data="appDetail"
@@ -22,12 +23,6 @@
                 prop="reagentName"
                 label="试剂名称"
                 align="center">
-              </el-table-column>
-              <el-table-column
-                prop="reagentUnit"
-                label="单位"
-                align="center"
-                width="55px">
               </el-table-column>
               <el-table-column
                 prop="appSpec"
@@ -66,7 +61,7 @@
           <el-row>
             <el-col :span="18">
               <div>
-                查询&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:100px">
+                查询&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="类别" size="small" style="width:100px">
                 <el-option
                   v-for="item in reagentType"
                   :key="item.typeID"
@@ -178,12 +173,6 @@
                 align="center">
               </el-table-column>
               <el-table-column
-                prop="reagentUnit"
-                label="单位"
-                align="center"
-                width="60px">
-              </el-table-column>
-              <el-table-column
                 prop="reagentNum"
                 label="库存量"
                 align="center"
@@ -193,7 +182,7 @@
                 prop="reagentSpec"
                 label="规格"
                 align="center"
-                width="120px">
+                width="140px">
                 <template slot-scope="scope">
                   <el-select v-model="scope.row.choiceSpec" @change="getStock(scope.row, scope.$index)">
                     <el-option
@@ -210,15 +199,14 @@
                 prop="reagentPurity"
                 label="纯度"
                 align="center"
-                width="138px">
+                width="140px">
                 <template slot-scope="scope">
-                  <el-select v-model="scope.row.reagentPurity" @visible-change="$forceUpdate()" @change="getStock(scope.row, scope.$index)">
+                  <el-select :disabled="scope.row.purityDisabled" v-model="scope.row.reagentPurity" @visible-change="$forceUpdate()" @change="getStock(scope.row, scope.$index)">
                     <el-option
                       v-for="item in reagentPurity"
                       :key="item.purityID"
                       :label="item.purityName"
-                      :value="item.purityName"
-                    >
+                      :value="item.purityName">
                     </el-option>
                   </el-select>
                 </template>
@@ -227,16 +215,16 @@
                 prop="appNum"
                 label="申领数量"
                 align="center"
-                width="125px">
+                width="150px">
                 <template slot-scope="scope">
-                  <el-input-number style="width:100px" v-model="scope.row.appNum"  value=0 :precision="2" :step="1" :min="0" :max="10000" @change="changeEditInput" size="mini"></el-input-number>
+                  <el-input-number style="width:120px" v-model="scope.row.appNum"  value=0 :precision="2" :step="1" :min="0" :max="10000" @change="changeEditInput" size="mini"></el-input-number>
                 </template>
               </el-table-column>
               <el-table-column
                 label="备注"
                 align="center"
                 prop="remark"
-                width="125px">
+                width="140px">
                 <template slot-scope="scope">
                   <el-input v-model="scope.row.remark" placeholder="请输入备注" size="mini" style="width:100px"></el-input>
                 </template>
@@ -291,8 +279,15 @@ export default {
   methods: {
     // 选择纯度和规格后，获得库存数量
     getStock (rowInfo, rowIndex) {
+      if (rowInfo.reagentTypeID === 1 || rowInfo.reagentTypeID === 4) {
+        if (rowInfo.choiceSpec === '' || rowInfo.reagentPurity === '') {
+          // 试剂和易制毒 需要选择了规格和纯度才能统一查询
+          return
+        }
+      }
       let stockInfo = {
         reagentID: rowInfo.reagentID,
+        reagentTypeID: rowInfo.reagentTypeID,
         stockSpec: rowInfo.choiceSpec,
         stockPurity: rowInfo.reagentPurity
       }
@@ -304,15 +299,7 @@ export default {
         }
       })
         .then((res) => {
-          let tempNum
-          if (res.data.results.length === 0) {
-            tempNum = 0
-            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
-          } else {
-            tempNum = res.data.results[0].reagentNum
-            rowInfo.reagentUnit = rowInfo.reagentUnit + ' '
-          }
-          rowInfo.reagentNum = tempNum
+          rowInfo.reagentNum = res.data.countNum
         })
         .catch((err) => {
           console.log(err)
@@ -341,7 +328,6 @@ export default {
         })
           .then((res) => {
             this.appDetail = res.data
-            console.log(res.data)
           })
           .catch((err) => {
             console.log(err)
@@ -383,15 +369,14 @@ export default {
         })
         return
       }
-
+      console.log(this.appDetail)
       for (let i = 0; i < this.appDetail.length; i++) {
-        // **** 写死了判断危化品的条件为1
-        if (this.appDetail[i].reagentDangerID !== 1) {
+        // **** 申领品的类型为易制毒（爆） reagentTypeID === 4
+        if (this.appDetail[i].reagentTypeID === 4) {
           this.appInfo.hasDanger = true
           break
         }
       }
-      // console.log(this.appDetail, this.appInfo.hasDanger)
       let urlAddr
       if (this.appInfo.appID === 0) {
         urlAddr = '/api/application/appSave'
@@ -399,7 +384,7 @@ export default {
         urlAddr = '/api/application/appModify'
       }
 
-      console.log(this.appDetail, this.appInfo)
+      // console.log(this.appDetail, this.appInfo)
       axios({
         method: 'post',
         url: urlAddr,
@@ -469,10 +454,35 @@ export default {
       })
         .then((res) => {
           // console.log(res)
-          this.stockInfoData = res.data.data
-          for (let i = 0; i < this.stockInfoData.length; i++) {
-            this.stockInfoData[i].specList = this.stockInfoData[i].reagentSpec.split(',')
+          let tempData = res.data.data
+          for (let i = 0; i < tempData.length; i++) {
+            tempData[i].specList = tempData[i].reagentSpec.split(',')
+            tempData[i].reagentNum = ''
+            tempData[i].choiceSpec = ''
+            switch (tempData[i].reagentTypeID) {
+              case 1:
+                // 试剂，纯度可选
+                tempData[i].purityDisabled = false
+                tempData[i].reagentPurity = ''
+                break
+              case 2:
+                // 耗材，纯度不可选
+                tempData[i].purityDisabled = true
+                tempData[i].reagentPurity = '/'
+                break
+              case 3:
+                // 标准物质，纯度不可选
+                tempData[i].purityDisabled = true
+                tempData[i].reagentPurity = '/'
+                break
+              case 4:
+                // 易制毒，纯度可选
+                tempData[i].purityDisabled = false
+                tempData[i].reagentPurity = ''
+                break
+            }
           }
+          this.stockInfoData = tempData
           this.pageCount = res.data.count
         })
         .catch((err) => {
@@ -529,8 +539,6 @@ export default {
         })
       } else {
         // 需要判断是否已经添加了该试剂，如果是，则将数量相加
-        console.log(row)
-        console.log(this.appDetail)
         let flag = true
         for (let reagent of this.appDetail) {
           if (reagent.reagentID === row.reagentID && reagent.appSpec === row.choiceSpec && reagent.appPurity === row.reagentPurity) {
@@ -545,6 +553,7 @@ export default {
             reagentID: row.reagentID,
             reagentName: row.reagentName,
             reagentUnit: row.reagentUnit,
+            reagentTypeID: row.reagentTypeID,
             appSpec: row.choiceSpec,
             appPurity: row.reagentPurity,
             appNum: row.appNum,

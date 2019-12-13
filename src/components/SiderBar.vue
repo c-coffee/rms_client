@@ -89,7 +89,7 @@
             </el-menu-item>
             <el-menu-item index="/DangerApprove" v-if="checkRank('BaseSet')">
               <i class="el-icon-warning-outline"></i>
-              <span slot="title">危化审核</span>
+              <span slot="title">申领审核</span>
               <el-badge :value="6" style="float:right" type="primary">
               </el-badge>
             </el-menu-item>
