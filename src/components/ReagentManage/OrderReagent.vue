@@ -196,23 +196,6 @@ export default {
     showAddDialog: function () {
       this.addSupplierDialogVisible = true
     },
-    handleDelete: function (index, row) {
-      this.$confirm('您确定删除科室信息吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
-    },
     handleEdit: function (index, row) {
       this.modifySupplierDialogVisible = true
     }

@@ -261,6 +261,7 @@ export default {
     },
     // 点开详情懒加载申购试剂数据
     loadDetail: function (row, expandedRows) {
+      console.log(row)
       let that = this
       if (expandedRows.length) {
         that.expands = []

@@ -64,14 +64,15 @@
                 </el-table-column>
                 <el-table-column
                   label="操作"
-                  align="center">
+                  align="center"
+                  width="160px">
                   <template slot-scope="scope">
                     <el-button
                     size="mini"
                     type="text"
                     round
                     :disabled="scope.row.disableModify"
-                    @click="handleChoice(scope.row)">库存</el-button>
+                    @click="handleShowStock(scope.row)">库存</el-button>
                     <el-button
                     size="mini"
                     type="primary"
@@ -86,7 +87,7 @@
           <el-table-column
               prop="orderID"
               label="序号"
-              width="180"
+              width="50"
               align="center">
           </el-table-column>
           <el-table-column
@@ -104,8 +105,12 @@
               label="当前步骤"
               align="center"
               :filters="[{text:'待提交',value:10},{text:'待处理',value:11},{text:'询价中',value:12},{text:'待审核',value:13},{text:'申购驳回',value:14},{text:'采购驳回',value:15},{text:'采购中',value:16},{text:'已完成',value:17}]"
-              :filter-method="filterState"
-              >
+              :filter-method="filterState">
+              <template slot-scope="scope">
+                <el-tooltip :disabled="scope.row.showRejectInfo" class="item" effect="dark" :content="scope.row.orderRejectReason" placement="top-start">
+                  <el-tag :type="scope.row.tagType">{{scope.row.stepName}} <span v-if="!scope.row.showRejectInfo" class="el-icon-warning-outline"></span></el-tag>
+                </el-tooltip>
+              </template>
           </el-table-column>
           <el-table-column
             label="操作"
@@ -164,7 +169,8 @@
           <el-table-column
             prop="supplierName"
             label="名称"
-            align="center">
+            align="center"
+            width="70">
           </el-table-column>
           <el-table-column
             prop="supplierContact"
@@ -174,7 +180,8 @@
           <el-table-column
             prop="supplierContactPhone"
             label="电话"
-            align="center">
+            align="center"
+            width="120px">
           </el-table-column>
           <el-table-column
             prop="supplierLevel"
@@ -183,8 +190,17 @@
             align="center">
           </el-table-column>
           <el-table-column
-            label="操作"
+            prop="remark"
+            label="备注"
             align="center">
+              <template slot-scope="scope">
+                <span style="font-size:8px">{{scope.row.remark}}</span>
+              </template>
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            align="center"
+            width="80">
             <template slot-scope="scope">
               <el-button
               size="mini"
@@ -194,6 +210,57 @@
             </template>
           </el-table-column>
         </el-table>
+    </el-dialog>
+    <el-dialog
+      title="库存展示"
+      :visible.sync="dialogStocksVisible"
+      :close-on-click-modal="false">
+        <el-table
+        border
+        :data="stocksList">
+          <el-table-column
+            prop="stocksID"
+            label="序号"
+            width="50"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="reagentName"
+            label="名称"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="stockSpec"
+            label="规格"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="stockPurity"
+            label="纯度"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="stockUnit"
+            label="单位"
+            width="60"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="composition"
+            label="含量"
+            width="60"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="reagentNum"
+            label="库存量"
+            width="70"
+            align="center">
+          </el-table-column>
+        </el-table>
+        <div slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="dialogStocksVisible=false">关 闭</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -205,11 +272,13 @@ export default {
   data () {
     return {
       supplierList: [], // 供应商信息
+      stocksList: [], // 库存详细列表，用于展示当前库存
       orderList: [],
       orderDetail: [],
       expands: [], // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
       dialogRejectVisible: false, // 驳回窗口控制标志
       dialogChoiceSupplierVisible: false, // 选择供应商窗口标志
+      dialogStocksVisible: false, // 当前试剂库存展示窗口标志
       rejectForm: {
         orderID: 0,
         reason: ''
@@ -223,6 +292,27 @@ export default {
     }
   },
   methods: {
+    handleShowStock: function (row) {
+      // console.log(row)
+      axios({
+        method: 'get',
+        url: '/api/stocks/getStocksByReagentID',
+        params: {
+          reagentID: row.reagentID
+        }
+      })
+        .then((res) => {
+          this.stocksList = res.data
+          this.dialogStocksVisible = true
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     handleChoiceSupplier: function (row) {
       this.choiceInfo.supplierID = row.supplierID
       axios({
@@ -231,15 +321,21 @@ export default {
         data: {
           choiceInfo: {
             supplierID: this.choiceInfo.supplierID,
-            orderDetailID: this.choiceInfo.orderDetailID
+            orderDetailID: this.choiceInfo.orderDetailID,
+            orderID: this.choiceInfo.orderID
           }
         }
       })
         .then((res) => {
+          this.dialogChoiceSupplierVisible = false
           if (res.data.result === 1) {
             // 设置成功
-            this.dialogChoiceSupplierVisible = false
             this.loadDetail(this.choiceInfo.orderRow, [this.choiceInfo.orderRow])
+          } else {
+            this.$message({
+              message: res.data.msg,
+              type: 'error'
+            })
           }
         })
         .catch((err) => {
@@ -270,6 +366,7 @@ export default {
     },
     handleChoice: function (row) {
       this.choiceInfo.orderDetailID = row.orderDetailID
+      this.choiceInfo.orderID = row.orderID
       this.choiceInfo.orderRow = row
       this.dialogChoiceSupplierVisible = true
     },
@@ -286,10 +383,19 @@ export default {
           // 修改，删除，提交按钮状态，只有在当前申购单处于待提交状态时，可以使用
           // 待提交状态值为 11 ,参见 stepList 表
           for (let i = 0; i < this.orderList.length; i++) {
+            this.orderList[i].tagType = 'info'
             if (this.orderList[i].stepID === 11 || this.orderList[i].stepID === 15 || this.orderList[i].stepID === 12) {
               this.orderList[i].disableModify = false
             } else {
               this.orderList[i].disableModify = true
+            }
+            if (this.orderList[i].stepID === 15) {
+              // 申购驳回
+              this.orderList[i].tagType = 'danger' // 设置当前步骤所用模版
+              this.orderList[i].disableModify = false // 控制是否显示修改，删除，提交按钮
+              this.orderList[i].showRejectInfo = false // 控制是否显示 驳回信息提示
+            } else {
+              this.orderList[i].showRejectInfo = true
             }
           }
         })
@@ -425,11 +531,7 @@ export default {
 </script>
 
 <style scoped>
-  .supplierDetail .el-row{
-    margin-bottom: 10px;
-  }
-  .detailTitle{
-    color: #99a9bf;
-    text-align: right;
+  .remarkFont{
+    font-size: 8px !important
   }
 </style>

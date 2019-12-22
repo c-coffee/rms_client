@@ -16,15 +16,13 @@
           row-key="orderID"
           lazy
           @expand-change="loadDetail"
-          :expand-row-keys="expands"
-          >
+          :expand-row-keys="expands">
           <el-table-column type="expand">
             <template>
               <el-table
                 :data="orderDetail"
                 border
-                size="mini"
-              >
+                size="mini">
                 <el-table-column
                   prop="orderDetailID"
                   label="序号"
@@ -34,11 +32,6 @@
                 <el-table-column
                   prop="reagentName"
                   label="试剂名称"
-                  align="center">
-                </el-table-column>
-                <el-table-column
-                  prop="reagentUnit"
-                  label="单位"
                   align="center">
                 </el-table-column>
                 <el-table-column
@@ -105,7 +98,7 @@
               :filter-method="filterState">
               <template slot-scope="scope">
                 <el-tooltip :disabled="scope.row.showRejectInfo" class="item" effect="dark" :content="scope.row.applyRejectReason" placement="top-start">
-                  <el-tag :type="scope.row.tagType">{{scope.row.stepName}}</el-tag>
+                  <el-tag :type="scope.row.tagType">{{scope.row.stepName}} <span v-if="!scope.row.showRejectInfo" class="el-icon-warning-outline"></span></el-tag>
                 </el-tooltip>
               </template>
           </el-table-column>
@@ -141,39 +134,59 @@
       </el-col>
     </el-row>
     <el-dialog
+      @close="closeDialog"
       title="入库"
       :visible.sync="dialogStockInVisible"
       :close-on-click-modal="false">
       <el-card class="box-card">
+        <el-row >
+          <el-col style="margin-top:-15px"><el-divider>申 购 信 息</el-divider></el-col>
+        </el-row>
         <el-row>
-          <el-col :span="4">名称：</el-col>
-          <el-col :span="8">{{stockInInfo.reagentName}}</el-col>
-          <el-col :span="4">单位：</el-col>
-          <el-col :span="8">{{stockInInfo.reagentUnit}}</el-col>
+          <el-col :span="4" align="right">名称：</el-col>
+          <el-col :span="4">{{stockInInfo.reagentName}}</el-col>
+          <el-col align="right" :span="4">类型：</el-col>
+          <el-col :span="4">{{stockInInfo.typeName}}</el-col>
+          <el-col align="right" :span="4">供应商：</el-col>
+          <el-col :span="4">{{stockInInfo.supplierName}}</el-col>
         </el-row>
         <el-row class="center-row">
-          <el-col :span="4">申购数量：</el-col>
-          <el-col :span="8">{{stockInInfo.orderNum}}</el-col>
-          <el-col :span="4">供应商：</el-col>
-          <el-col :span="8">{{stockInInfo.supplierName}}</el-col>
+          <el-col align="right" :span="4">数量：</el-col>
+          <el-col :span="4">{{stockInInfo.orderNum}}</el-col>
+          <el-col align="right" :span="4">规格：</el-col>
+          <el-col :span="4">{{stockInInfo.orderSpec}}</el-col>
+          <el-col align="right" :span="4">纯度：</el-col>
+          <el-col :span="4">{{stockInInfo.orderPurity}}</el-col>
         </el-row>
-        <el-row>
-          <el-col :span="4">申购规格：</el-col>
-          <el-col :span="8">{{stockInInfo.orderSpec}}</el-col>
-          <el-col :span="4">申购纯度：</el-col>
-          <el-col :span="8">{{stockInInfo.orderPurity}}</el-col>
+        <el-row >
+          <el-col style="margin-top:5px"><el-divider>入 库 信 息</el-divider></el-col>
         </el-row>
-        <el-row>
-          <el-col><el-divider></el-divider></el-col>
-        </el-row>
-        <el-row>
-         <el-col>
-           <el-form ref="form" :model="stockInForm" label-width="80px">
-            <el-form-item label="入库数量">
-              <el-input-number v-model="stockInForm.reagentNum" style="width:200px" :min="1" :max="10000" :step="1" label="入库数量"></el-input-number>
-            </el-form-item>
-            <el-form-item label="入库纯度" class="formItem">
-              <el-select v-model="stockInForm.orderPurity" placeholder="请选择入库纯度" style="width:200px">
+        <el-form ref="stockInForm" :inline="true" :model="stockInForm" label-width="80px">
+          <el-row>
+            <el-col :span="12" class="form-item">
+              <el-form-item
+                label="批号"
+                prop="stockBatchNo">
+                <el-autocomplete
+                  v-model="stockInForm.stockBatchNo"
+                  :fetch-suggestions="getRecordList"
+                  @select="handleSelect"
+                  size="mini"
+                  style="width:150px"
+                  label="批号">
+                </el-autocomplete>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" class="form-item">
+              <el-form-item label="数量" prop="reagentNum">
+                <el-input-number size="mini" v-model="stockInForm.reagentNum" style="width:150px" :min="1" :max="10000" :step="1" label="入库数量"></el-input-number>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row class="form-row">
+            <el-col :span="12"  class="form-item">
+              <el-form-item label="纯度" class="formItem" prop="orderPurity">
+              <el-select v-model="stockInForm.orderPurity" placeholder="请选择入库纯度" size="mini" style="width:150px">
                 <el-option
                   v-for="item in purityData"
                   :key="item.purityID"
@@ -182,11 +195,13 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="入库规格"  class="formItem">
+            </el-col>
+            <el-col :span="12" class="form-item">
+            <el-form-item label="规格" class="formItem" prop="orderSpec">
               <el-select
               v-model="stockInForm.orderSpec"
               placeholder="请选择入库规格"
-              style="width:200px">
+              style="width:150px" size="mini">
                 <el-option
                   v-for="(item,index) in stockInInfo.specList"
                   :key="index"
@@ -195,10 +210,52 @@
                 </el-option>
               </el-select>
             </el-form-item>
-           </el-form>
-         </el-col>
-        </el-row>
-        <el-row><el-col></el-col></el-row>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12" class="form-item">
+              <el-form-item label="单位" prop="stockUnit">
+                <el-input v-model="stockInForm.stockUnit" size="mini" style="width:150px" :min="1" :max="10000" :step="1" label="单位"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" class="form-item">
+              <el-form-item label="含量" prop="composition">
+                <el-input v-model="stockInForm.composition" size="mini" style="width:150px" label="含量"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12" class="form-item">
+              <el-form-item label="来源" prop="stockBrand">
+                <el-input v-model="stockInForm.stockBrand" size="mini" style="width:150px" :min="1" :max="10000" :step="1" label="品牌"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" class="form-item">
+              <el-form-item label="有效期" prop="expiryDate">
+                <el-date-picker
+                  v-model="stockInForm.expiryDate"
+                  type="date"
+                  value-format="yyyy-M-d"
+                  placeholder="选择日期"
+                  size="mini"
+                  style="width:150px">
+                </el-date-picker>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12" class="form-item">
+              <el-form-item label="备案号" prop="stockRecordNo">
+                <el-input :disabled="stockInForm.disabledRecord" v-model="stockInForm.stockRecordNo" size="mini" style="width:150px" :min="1" :max="10000" :step="1" label="品牌"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12" class="form-item">
+              <el-form-item label="标准号" prop="standardNo">
+                <el-input :disabled="stockInForm.disabledStandard" v-model="stockInForm.standardNo" size="mini" style="width:150px" :min="1" :max="10000" :step="1" label="品牌"></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-form>
       </el-card>
       <span slot="footer" class="dialog-footer">
         <el-checkbox v-model="stockInForm.hasFinished" style="float:left">完成采购</el-checkbox>
@@ -215,6 +272,7 @@ export default {
   name: 'ApplicationOrderManage',
   data () {
     return {
+      recordList: [], // 批号可选列表
       currentOrder: {}, // 当前正在处理的订单
       dialogStockInVisible: false, // 入库窗口显示标志
       stockInInfo: {},
@@ -222,7 +280,13 @@ export default {
         orderSpec: '',
         orderPurity: '',
         hasFinished: true,
-        reagentNum: 0
+        reagentNum: 0,
+        stockBatchNo: '', // 批号
+        stockRecordNo: '', // 备案号
+        stockUnit: '', // 试剂单位
+        stockBrand: '', // 试剂品牌
+        composition: '', // 含量
+        expiryDate: '' // 过期日期
       },
       orderList: [],
       purityData: [],
@@ -231,48 +295,95 @@ export default {
     }
   },
   methods: {
+    // 入库窗口关闭时，窗口内容初始化
+    closeDialog: function () {
+      this.$refs['stockInForm'].resetFields()
+    },
+    // 获取批号列表
+    getRecordList: function (queryString, cb) {
+      var results = queryString ? this.recordList.filter(this.createFilter(queryString)) : this.recordList
+      // 调用 callback 返回建议列表的数据
+      cb(results)
+    },
+    // 批号筛选函数
+    createFilter (queryString) {
+      return (record) => {
+        return (record.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+      }
+    },
+    // 批号选中之后的处理
+    handleSelect: function (item) {
+      this.stockInForm.orderSpec = item.stockSpec
+      this.stockInForm.orderPurity = item.stockPurity
+      this.stockInForm.stockUnit = item.stockUnit
+      this.stockInForm.stockBrand = item.stockBrand
+      this.stockInForm.composition = item.composition
+      this.stockInForm.expiryDate = item.expiryDate
+      this.stockInForm.stockRecordNo = item.stockRecordNo
+    },
     saveStockIn: function () {
-      // 商品入库
-      axios({
-        method: 'post',
-        url: '/api/order/saveStockIn',
-        data: {
-          stockInInfo: this.stockInForm
-        }
-      })
-        .then((res) => {
-          this.dialogStockInVisible = false
-          if (res.data.result === 1) {
-            // 入库操作成功
-            this.loadDetail(this.currentOrder, [this.currentOrder])
-            this.$message({
-              message: res.data.msg,
-              type: 'success'
-            })
-          }
-          if (res.data.result === 2) {
-            // 入库操作成功，订单已完成
-            this.getOrderList()
-            this.$message({
-              message: res.data.msg,
-              type: 'success'
-            })
-          }
-          if (res.data.result === 3) {
-            // 部分入库成功
-            this.$message({
-              message: res.data.msg,
-              type: 'success'
-            })
+      this.$confirm('您确定提交吗?（空白项目自动补上"/"）', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 没有输入的项目，自动补上 '/'
+        if (this.stockInForm.orderSpec === '') this.stockInForm.orderSpec = '/'
+        if (this.stockInForm.orderPurity === '') this.stockInForm.orderPurity = '/'
+        if (this.stockInForm.stockUnit === '') this.stockInForm.stockUnit = '/'
+        if (this.stockInForm.stockBrand === '') this.stockInForm.stockBrand = '/'
+        if (this.stockInForm.composition === '') this.stockInForm.composition = '/'
+        if (this.stockInForm.stockRecordNo === '') this.stockInForm.stockRecordNo = '/'
+        if (this.stockInForm.stockBatchNo === '') this.stockInForm.stockBatchNo = '/'
+        if (this.stockInForm.standardNo === '') this.stockInForm.standardNo = '/'
+
+        // 商品入库
+        axios({
+          method: 'post',
+          url: '/api/order/saveStockIn',
+          data: {
+            stockInInfo: this.stockInForm
           }
         })
-        .catch((err) => {
-          console.log(err)
-          this.$message({
-            message: '服务器错误！',
-            type: 'error'
+          .then((res) => {
+            this.dialogStockInVisible = false
+            if (res.data.result === 1) {
+              // 入库操作成功
+              this.loadDetail(this.currentOrder, [this.currentOrder])
+              this.$message({
+                message: res.data.msg,
+                type: 'success'
+              })
+            }
+            if (res.data.result === 2) {
+              // 入库操作成功，订单已完成
+              this.getOrderList()
+              this.$message({
+                message: res.data.msg,
+                type: 'success'
+              })
+            }
+            if (res.data.result === 3) {
+              // 部分入库成功
+              this.$message({
+                message: res.data.msg,
+                type: 'success'
+              })
+            }
           })
+          .catch((err) => {
+            console.log(err)
+            this.$message({
+              message: '服务器错误！',
+              type: 'error'
+            })
+          })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
         })
+      })
     },
     getPurityList: function () {
       axios({
@@ -291,21 +402,63 @@ export default {
         })
     },
     handleChoice: function (row) {
-      // console.log(row)
       this.stockInInfo = row
+      // console.log(row)
       for (let i = 0; i < this.orderDetail.length; i++) {
         if (this.orderDetail[i].orderDetailID === row.orderDetailID) {
           this.stockInInfo.specList = this.orderDetail[i].reagentSpec.split(',')
           break
         }
       }
-
-      this.stockInForm.reagentNum = row.orderNum
+      this.stockInForm.orderSpec = ''
+      this.stockInForm.orderPurity = ''
+      this.stockInForm.stockUnit = ''
+      this.stockInForm.stockBrand = ''
+      this.stockInForm.composition = ''
+      this.stockInForm.expiryDate = ''
+      this.stockInForm.stockRecordNo = ''
+      this.stockInForm.standardNo = ''
       this.stockInForm.reagentID = row.reagentID
-      this.stockInForm.orderPurity = row.orderPurity
-      this.stockInForm.orderSpec = row.orderSpec
       this.stockInForm.orderDetailID = row.orderDetailID
-      this.stockInForm.orderID = row.orderID
+
+      this.stockInForm.disabledRecord = true
+      this.stockInForm.stockRecordNo = '/'
+
+      this.stockInForm.disabledStandard = true
+      this.stockInForm.standardNo = '/'
+
+      switch (this.stockInInfo.reagentTypeID) {
+        case 3:
+          this.stockInForm.disabledStandard = false
+          this.stockInForm.standardNo = ''
+          break
+        case 4:
+          this.stockInForm.stockRecordNo = ''
+          this.stockInForm.disabledRecord = false
+          break
+      }
+
+      axios({
+        method: 'get',
+        url: '/api/stocks/getStocksByReagentID',
+        params: {
+          reagentID: row.reagentID
+        }
+      })
+        .then((res) => {
+          // todo: 获得列表，保存
+          this.recordList = res.data
+          for (let i = 0; i < this.recordList.length; i++) {
+            this.recordList[i].value = this.recordList[i].stockBatchNo
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
 
       this.dialogStockInVisible = true
     },
@@ -473,7 +626,6 @@ export default {
       })
         .then((res) => {
           this.orderDetail = res.data
-          console.log(row)
           for (let i = 0; i < this.orderDetail.length; i++) {
             if (this.orderDetail[i].reagentNum === null) {
               this.orderDetail[i].reagentNum = 0
@@ -506,9 +658,12 @@ export default {
     margin-top:-10px
   }
   .center-row{
-    margin: 10px 0
+    margin: 10px 0 -10px 0
   }
-  .formItem{
-    margin-top: -10px;
+  .form-item{
+    height:35px
+  }
+  .title{
+    background-color:darkgray
   }
 </style>
