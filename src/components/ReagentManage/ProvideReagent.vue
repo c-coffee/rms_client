@@ -272,7 +272,7 @@ export default {
               // 生成库存试剂下拉菜单数据
               for (let m = 0; m < temData[i].stocksList.length; m++) {
                 let temp = temData[i].stocksList[m]
-                let text = '库存量:' + temp.reagentNum + ' 规格:' + temp.stockSpec + ' 纯度:' + temp.stockPurity + ' 品牌:' + temp.stockBrand + ' 保质期:' + new Date(temp.expiryDate).toLocaleDateString()
+                let text = '名称:' + temp.reagentName + ' 库存量:' + temp.reagentNum + ' 规格:' + temp.stockSpec + ' 纯度:' + temp.stockPurity + ' 品牌:' + temp.stockBrand + ' 保质期:' + new Date(temp.expiryDate).toLocaleDateString()
                 let value = m
                 temData[i].stockItems.push({'text': text, 'value': value})
               }

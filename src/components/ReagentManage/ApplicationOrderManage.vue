@@ -286,7 +286,8 @@ export default {
         stockUnit: '', // 试剂单位
         stockBrand: '', // 试剂品牌
         composition: '', // 含量
-        expiryDate: '' // 过期日期
+        expiryDate: '', // 过期日期
+        standardNo: ''
       },
       orderList: [],
       purityData: [],
@@ -403,7 +404,7 @@ export default {
     },
     handleChoice: function (row) {
       this.stockInInfo = row
-      // console.log(row)
+      console.log(row)
       for (let i = 0; i < this.orderDetail.length; i++) {
         if (this.orderDetail[i].orderDetailID === row.orderDetailID) {
           this.stockInInfo.specList = this.orderDetail[i].reagentSpec.split(',')
@@ -420,6 +421,7 @@ export default {
       this.stockInForm.standardNo = ''
       this.stockInForm.reagentID = row.reagentID
       this.stockInForm.orderDetailID = row.orderDetailID
+      this.stockInForm.orderID = row.orderID
 
       this.stockInForm.disabledRecord = true
       this.stockInForm.stockRecordNo = '/'

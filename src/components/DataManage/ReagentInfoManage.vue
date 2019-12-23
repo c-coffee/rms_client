@@ -96,10 +96,10 @@
               </el-row>
               <el-row>
                 <el-col :span="3" class="detailTitle">
-                  制造商：
+                  关键字：
                 </el-col>
                 <el-col :span="21">
-                  {{ props.row.reagentProduct }}
+                  {{ props.row.keywords }}
                 </el-col>
               </el-row>
               </div>
@@ -166,7 +166,28 @@
             {required: true, message:'试剂名称不能为空', trigger: 'blur'}
             ]"
             >
-              <el-input v-model="addForm.reagentName" autocomplete="off"></el-input>
+              <el-input @change="changeName($event, addForm)" v-model="addForm.reagentName" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="关键字"
+            label-width="100px"
+            prop="keywords">
+              <el-input v-model="addForm.keywords" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="拼音短码"
+            label-width="100px"
+            prop="reagentShortCode"
+            :rules="[
+            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="addForm.reagentShortCode" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -176,8 +197,7 @@
             prop="reagentTypeID"
             :rules="[
             {required: true, message:'试剂类型不能为空', trigger: 'blur'}
-            ]"
-            >
+            ]">
               <el-select v-model="addForm.reagentTypeID" placeholder="请选择" @change="changeType">
                 <el-option
                   v-for="item in reagentType"
@@ -189,7 +209,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+         <el-row>
           <el-col :span="12">
             <el-form-item
             label="CAS"
@@ -215,27 +235,6 @@
                   :value="item.dangerID">
                 </el-option>
               </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-         <el-row>
-          <el-col :span="12">
-            <el-form-item
-            label="拼音短码"
-            label-width="100px"
-            prop="reagentShortCode"
-            :rules="[
-            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
-            ]">
-              <el-input v-model="addForm.reagentShortCode" autocomplete="off"></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item
-            label="制造商"
-            label-width="100px"
-            prop="reagentProduct">
-              <el-input v-model="addForm.reagentProduct" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -282,7 +281,28 @@
             {required: true, message:'试剂名称不能为空', trigger: 'blur'}
             ]"
             >
-              <el-input v-model="editForm.reagentName" autocomplete="off"></el-input>
+              <el-input @change="changeName($event, editForm)" v-model="editForm.reagentName" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+            label="关键字"
+            label-width="100px"
+            prop="keywords">
+              <el-input v-model="editForm.keywords" autocomplete="off"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+            label="拼音短码"
+            label-width="100px"
+            prop="reagentShortCode"
+            :rules="[
+            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
+            ]">
+              <el-input v-model="editForm.reagentShortCode" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -305,13 +325,12 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
+         <el-row>
           <el-col :span="12">
             <el-form-item
             label="CAS"
             label-width="100px"
-            prop="reagentName"
-            >
+            prop="reagentName">
               <el-input v-model="editForm.CAS" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
@@ -331,27 +350,6 @@
                   :value="item.dangerID">
                 </el-option>
               </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-         <el-row>
-          <el-col :span="12">
-            <el-form-item
-            label="拼音短码"
-            label-width="100px"
-            prop="reagentShortCode"
-            :rules="[
-            {required: true, message:'拼音短码不能为空', trigger: 'blur'}
-            ]">
-              <el-input v-model="editForm.reagentShortCode" autocomplete="off"></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item
-            label="制造商"
-            label-width="100px"
-            prop="reagentProduct">
-              <el-input v-model="editForm.reagentProduct" autocomplete="off"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -402,10 +400,12 @@ export default {
       addForm: {
         reagentSpec: '',
         reagentDangerID: 0,
-        CAS: ''
+        CAS: '',
+        keywords: ''
       },
       editForm: {
-        reagentSpec: ''
+        reagentSpec: '',
+        keywords: ''
       },
       reagentDanger: [],
       reagentState: [],
@@ -416,6 +416,9 @@ export default {
     }
   },
   methods: {
+    changeName (name, form) {
+      form.keywords = name
+    },
     modifyType (value) {
       // 当用户选择了易制毒（爆） value===4 时，危化类别的其它选项才可选，否则为 /
       if (value === 4) {
