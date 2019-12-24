@@ -123,7 +123,7 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'ReagentApplication',
+  name: 'ApplicationManage',
   data () {
     return {
       // 初始试剂信息模拟数据
@@ -180,52 +180,6 @@ export default {
     filterState: function (value, row) {
       return row.stepName === value
     },
-    showAddDialog: function () {
-      this.addSupplierDialogVisible = true
-    },
-    handleDelete: function (index, row) {
-      this.$confirm('您确定删除申请信息吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        // 通知数据库进行删除
-        axios({
-          method: 'post',
-          url: '/api/application/deleteApplication',
-          data: {
-            appID: row.appID
-          }
-        })
-          .then((res) => {
-            // 获得反馈信息，给出提示，重新读取列表
-            if (res.data.result === 1) {
-              this.getApplicationList()
-              this.$message({
-                type: 'success',
-                message: res.data.msg
-              })
-            } else {
-              this.$message({
-                type: 'error',
-                message: res.data.msg
-              })
-            }
-          })
-          .catch((err) => {
-            console.log(err)
-            this.$message({
-              message: '服务器错误！',
-              type: 'error'
-            })
-          })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
-        })
-      })
-    },
     handleProvide: function (index, row) {
       // 路由跳转带参数
       this.$router.push({path: '/ProvideReagent', query: {appInfo: row}})
@@ -260,12 +214,5 @@ export default {
 <style>
   .el-table .lackStock{
     background: oldlace
-  }
-  .supplierDetail .el-row{
-    margin-bottom: 10px;
-  }
-  .detailTitle{
-    color: #99a9bf;
-    text-align: right;
   }
 </style>

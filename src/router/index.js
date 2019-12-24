@@ -18,6 +18,7 @@ import UserManage from '@/components/DataManage/UserManage'
 import ReagentApplication from '@/components/ReagentProcess/ReagentApplication'
 import ReagentApplicationAdd from '@/components/ReagentProcess/ReagentApplicationAdd'
 import ReagentReceive from '@/components/ReagentProcess/ReagentReceive.vue'
+import ReagentReceiveDetail from '@/components/ReagentProcess/ReagentReceiveDetail.vue'
 import ReagentReturnApp from '@/components/ReagentProcess/ReagentReturnApp'
 import ReagentExpend from '@/components/ReagentProcess/ReagentExpend'
 import DangerApprove from '@/components/ReagentProcess/DangerApprove'
@@ -104,6 +105,10 @@ export default new Router({
         {
           path: '/ReagentReceive',
           component: ReagentReceive
+        },
+        {
+          path: '/ReagentReceiveDetail',
+          component: ReagentReceiveDetail
         },
         {
           path: '/ReagentReturnApp',

@@ -193,7 +193,7 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'ReagentApplicationAdd',
+  name: 'ProvideReagent',
   data () {
     return {
       appID: 0,
