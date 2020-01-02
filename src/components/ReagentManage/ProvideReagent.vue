@@ -436,11 +436,12 @@ export default {
     },
     // 试剂发放完成
     provideFinish (row) {
-      console.log(row)
       console.log(this.appDetailList)
       let str = '确定发放完成吗?'
+      let state = 1
       if (row.provideDetail.length === 0) {
         str = '尚未发放任何试剂，确定完成发放吗?'
+        state = 2
       }
       this.$confirm(str, '提示', {
         confirmButtonText: '确定',
@@ -452,7 +453,8 @@ export default {
           let info = {
             appDetailID: row.appDetailID,
             appID: row.appID,
-            appDetailList: this.appDetailList
+            appDetailList: this.appDetailList,
+            state: state
           }
           axios({
             method: 'post',

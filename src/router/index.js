@@ -35,6 +35,9 @@ import OrderReagent from '@/components/ReagentManage/OrderReagent'
 
 import ComStatistic from '@/components/Statistic/ComStatistic'
 import ComStatisticDetail from '@/components/Statistic/ComStatisticDetail'
+import DeptComStatistic from '@/components/Statistic/DeptComStatistic'
+import DeptComStatisticDetail from '@/components/Statistic/DeptComStatisticDetail'
+import ReportManage from '@/components/Statistic/ReportManage'
 
 Vue.use(Router)
 
@@ -165,6 +168,18 @@ export default new Router({
         {
           path: '/ComStatisticDetail',
           component: ComStatisticDetail
+        },
+        {
+          path: '/DeptComStatistic',
+          component: DeptComStatistic
+        },
+        {
+          path: '/DeptComStatisticDetail',
+          component: DeptComStatisticDetail
+        },
+        {
+          path: '/ReportManage',
+          component: ReportManage
         }
       ]
     }

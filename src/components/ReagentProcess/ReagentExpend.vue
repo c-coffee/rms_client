@@ -26,7 +26,7 @@
                   规格：
                 </el-col>
                 <el-col :span="9">
-                  {{ props.row.reagentSpec }}
+                  {{ props.row.stockSpec }}
                 </el-col>
               </el-row>
               <el-row>
@@ -34,7 +34,7 @@
                   单位：
                 </el-col>
                 <el-col :span="9">
-                  {{ props.row.reagentUnit }}
+                  {{ props.row.stockUnit }}
                 </el-col>
                 <el-col :span="3" class="detailTitle">
                   数量：
@@ -94,18 +94,28 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="reagentNum"
+              prop="typeName"
+              label="类型"
+              align="center">
+          </el-table-column>
+          <el-table-column
+              prop="deptStockNum"
               label="库存量"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="deptStocksSpec"
+              prop="stockSpec"
               label="规格"
               align="center">
           </el-table-column>
           <el-table-column
-              prop="deptStocksPurity"
+              prop="stockPurity"
               label="纯度"
+              align="center">
+          </el-table-column>
+          <el-table-column
+              prop="stockBatchNo"
+              label="批号"
               align="center">
           </el-table-column>
           <el-table-column
@@ -159,7 +169,6 @@ export default {
       expendForm: {
         stockNum: 0,
         deptStocksID: 0,
-        reagentID: 0,
         deptStocksSpec: '',
         deptStocksPurity: '',
         reagentNum: 1,
@@ -174,6 +183,7 @@ export default {
         url: '/api/stocks/getDeptStockList'
       })
         .then((res) => {
+          console.log(res.data)
           this.deptStockList = res.data
         })
         .catch((err) => {
@@ -212,9 +222,8 @@ export default {
     handleExpend: function (index, row) {
       this.expendForm.stockNum = row.reagentNum
       this.expendForm.reagentID = row.reagentID
-      this.expendForm.deptStocksSpec = row.deptStocksSpec
-      this.expendForm.deptStocksPurity = row.deptStocksPurity
       this.expendForm.deptStocksID = row.deptStocksID
+      this.expendForm.stocksID = row.stocksID
       this.dialogExpendVisible = true
     }
   },

@@ -4,7 +4,7 @@
       <el-col :span=24>
         <el-card>
           <div slot="header">
-            <span>库存统计</span>
+            <span>科室库存统计</span>
           </div>
           <el-row>
             <el-col :span="18">
@@ -203,8 +203,7 @@ export default {
   },
   methods: {
     handleDetail (row) {
-      console.log(row)
-      this.$router.push({path: '/ComStatisticDetail', query: {stockInfo: JSON.stringify(row)}})
+      this.$router.push({path: '/DeptComStatisticDetail', query: {stockInfo: JSON.stringify(row)}})
     },
     getBaseInfoList () {
       axios({
@@ -233,7 +232,7 @@ export default {
     getStocksList: function () {
       axios({
         method: 'get',
-        url: '/api/stocks/getListStock',
+        url: '/api/stocks/getDeptStockList',
         params: {
           searchInfo: this.searchInfo,
           pageInfo: {
@@ -243,7 +242,7 @@ export default {
         }
       })
         .then((res) => {
-          let temp = res.data.data
+          let temp = res.data
           for (let i = 0; i < temp.length; i++) {
             if (!temp[i].CAS) {
               temp[i].CAS = '/'
@@ -252,7 +251,7 @@ export default {
               temp[i].standardNo = '/'
             }
           }
-          this.stocksList = res.data.data
+          this.stocksList = temp
           this.pageCount = res.data.count
         })
         .catch((err) => {

@@ -5,7 +5,7 @@
         <el-card>
           <div slot="header">
             <span>出入库详情</span>
-            <el-button style="float: right; padding: 3px 10px" type="text"><router-link to="/ComStatistic" tag="span">返回</router-link></el-button>
+            <el-button style="float: right; padding: 3px 10px" type="text"><router-link to="/DeptComStatistic" tag="span">返回</router-link></el-button>
           </div>
           <div style="font-size:14px" class="detailInfo">
             <el-row>
@@ -196,13 +196,13 @@ export default {
     initAppInfo () {
       if (typeof (this.stockInfo.stocksID) === 'undefined' || this.stockInfo.stocksID === 0) {
         // 返回申领管理页面
-        this.$router.push({path: '/ComStatistic'})
+        this.$router.push({path: '/DeptComStatistic'})
       } else {
         axios({
           method: 'get',
-          url: '/api/stocks/getStockDetail',
+          url: '/api/stocks/getDeptStockDetail',
           params: {
-            stocksID: this.stockInfo.stocksID,
+            deptStocksID: this.stockInfo.deptStocksID,
             pageInfo: {
               pageSize: this.pageSize,
               currentPage: this.currentPage
@@ -220,6 +220,7 @@ export default {
                 temp[i].reagentNum = -temp[i].reagentNum
               }
             }
+            console.log(temp)
             this.stocksDetailList = temp
             this.pageCount = res.data.count
           })
@@ -235,13 +236,20 @@ export default {
     getStockNum: function () {
       axios({
         method: 'get',
-        url: '/api/stocks/getStockNumByID',
+        url: '/api/stocks/getDeptStockNumByID',
         params: {
-          stocksID: this.stockInfo.stocksID
+          deptStocksID: this.stockInfo.deptStocksID
         }
       })
         .then((res) => {
+          console.log(res)
+          if (!res.data.stockNum.in) {
+            res.data.stockNum.in = 0
+          }
           this.stockInfo.inNum = res.data.stockNum.in
+          if (!res.data.stockNum.out) {
+            res.data.stockNum.out = 0
+          }
           this.stockInfo.outNum = res.data.stockNum.out
           this.stockInfo.balanceNum = this.stockInfo.inNum - this.stockInfo.outNum
         })
@@ -277,7 +285,7 @@ export default {
   }
   .detailTitle{
     color: #99a9bf;
-    text-align: right
+    text-align: right;
   }
   .detailInfo .el-row{
     margin-top:7px
