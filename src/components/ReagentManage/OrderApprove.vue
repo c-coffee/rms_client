@@ -36,12 +36,6 @@
                   align="center">
                 </el-table-column>
                 <el-table-column
-                  prop="reagentUnit"
-                  label="单位"
-                  align="center"
-                  width="50px">
-                </el-table-column>
-                <el-table-column
                   prop="orderPurity"
                   label="纯度"
                   align="center">

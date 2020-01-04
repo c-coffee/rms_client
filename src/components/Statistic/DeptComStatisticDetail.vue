@@ -25,7 +25,7 @@
                 库存：
               </el-col>
               <el-col :span="5">
-                {{ this.stockInfo.reagentNum }}
+                {{ this.stockInfo.deptStockNum }}
               </el-col>
             </el-row>
             <el-row>
@@ -198,6 +198,7 @@ export default {
         // 返回申领管理页面
         this.$router.push({path: '/DeptComStatistic'})
       } else {
+        console.log(this.stockInfo.deptStocksID)
         axios({
           method: 'get',
           url: '/api/stocks/getDeptStockDetail',
@@ -211,8 +212,8 @@ export default {
         })
           .then((res) => {
             let temp = res.data.data
+            console.log(temp)
             for (let i = 0; i < temp.length; i++) {
-              // temp[i].opDatetime = new Date(temp[i].opDatetime).toLocaleDateString
               if (temp[i].direction === 'in') {
                 temp[i].recordState = '入库'
               } else if (temp[i].direction === 'out') {

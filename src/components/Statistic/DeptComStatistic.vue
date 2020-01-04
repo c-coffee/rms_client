@@ -60,7 +60,7 @@
                   库存：
                 </el-col>
                 <el-col :span="5">
-                  {{ props.row.reagentNum }}
+                  {{ props.row.deptStockNum }}
                 </el-col>
               </el-row>
               <el-row>
@@ -143,7 +143,7 @@
               align="center">
           </el-table-column>
           <el-table-column
-              prop="reagentNum"
+              prop="deptStockNum"
               label="库存量"
               align="center">
           </el-table-column>
@@ -251,6 +251,7 @@ export default {
               temp[i].standardNo = '/'
             }
           }
+          console.log(temp)
           this.stocksList = temp
           this.pageCount = res.data.count
         })

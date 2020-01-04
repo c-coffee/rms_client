@@ -93,6 +93,7 @@ export default {
       })
         .then((res) => {
           this.reagentAppDetail = res.data
+          console.log(res.data)
         })
         .catch((err) => {
           console.log(err)
