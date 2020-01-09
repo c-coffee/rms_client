@@ -145,7 +145,11 @@ export default {
     },
     // 用以判断按钮的禁用状态
     buttonChk: function (row) {
-      return false
+      if (row.stepID === 4) {
+        return false
+      } else {
+        return true
+      }
     },
     // 点开详情懒加载申购试剂数据
     loadDetail: function (row, expandedRows) {

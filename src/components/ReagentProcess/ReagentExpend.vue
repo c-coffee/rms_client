@@ -6,6 +6,14 @@
           <div slot="header">
             <span>试剂消耗管理</span>
           </div>
+          <el-pagination
+            @current-change="handleCurrentChange"
+            layout="prev, pager, next"
+            style="float:right"
+            :page-size="this.pageSize"
+            :current-page="this.currentPage"
+            :total="this.pageCount">
+          </el-pagination>
           <el-table
           :data="deptStockList"
           style="width: 100%"
@@ -19,64 +27,80 @@
                 <el-col :span="3" class="detailTitle">
                   试剂：
                 </el-col>
-                <el-col :span="9">
+                <el-col :span="5">
                   {{ props.row.reagentName }}
                 </el-col>
                 <el-col :span="3" class="detailTitle">
+                  类型：
+                </el-col>
+                <el-col :span="5">
+                  {{ props.row.typeName }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  库存：
+                </el-col>
+                <el-col :span="5">
+                  {{ props.row.deptStockNum }}
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="3" class="detailTitle">
                   规格：
                 </el-col>
-                <el-col :span="9">
+                <el-col :span="5">
                   {{ props.row.stockSpec }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  纯度：
+                </el-col>
+                <el-col :span="5">
+                  {{ props.row.stockPurity }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  含量：
+                </el-col>
+                <el-col :span="5">
+                  {{ props.row.composition }}
                 </el-col>
               </el-row>
               <el-row>
                 <el-col :span="3" class="detailTitle">
                   单位：
                 </el-col>
-                <el-col :span="9">
+                <el-col :span="5">
                   {{ props.row.stockUnit }}
                 </el-col>
                 <el-col :span="3" class="detailTitle">
-                  数量：
+                  批号：
                 </el-col>
-                <el-col :span="9">
-                  {{ props.row.reagentNum }}
+                <el-col :span="5">
+                  {{ props.row.stockBatchNo }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  受控号：
+                </el-col>
+                <el-col :span="5">
+                  {{ props.row.stockRecordNo }}
                 </el-col>
               </el-row>
               <el-row>
                 <el-col :span="3" class="detailTitle">
-                  当前存量：
+                  过期日期：
                 </el-col>
-                <el-col :span="9">
-                  {{ props.row.reagentDeptStore }}
-                </el-col>
-                <el-col :span="3" class="detailTitle">
-                  使用时间：
-                </el-col>
-                <el-col :span="9">
-                  {{ props.row.returnDate }}
-                </el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="3" class="detailTitle">
-                  使用用途：
-                </el-col>
-                <el-col :span="21">
-                  {{ props.row.returnReason }}
-                </el-col>
-              </el-row>
-              <el-row>
-                <el-col :span="3" class="detailTitle">
-                  受理人：
-                </el-col>
-                <el-col :span="9">
-                  {{ props.row.receiverUserName }}
+                <el-col :span="5">
+                  {{ props.row.expiryDate }}
                 </el-col>
                 <el-col :span="3" class="detailTitle">
-                  拒绝原因：
+                  CAS：
                 </el-col>
-                <el-col :span="9">
-                  {{ props.row.rejectReason }}
+                <el-col :span="5">
+                  {{ props.row.CAS }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  标准号：
+                </el-col>
+                <el-col :span="5">
+                  {{ props.row.standardNo }}
                 </el-col>
               </el-row>
               </div>
@@ -173,7 +197,10 @@ export default {
         deptStocksPurity: '',
         reagentNum: 1,
         reason: ''
-      }
+      },
+      currentPage: 1,
+      pageSize: 8,
+      pageCount: 0
     }
   },
   methods: {
@@ -183,8 +210,16 @@ export default {
         url: '/api/stocks/getDeptStockList'
       })
         .then((res) => {
-          console.log(res.data)
-          this.deptStockList = res.data
+          let temp = res.data.data
+          for (let i = 0; i < temp.length; i++) {
+            if (!temp[i].CAS) {
+              temp[i].CAS = '/'
+            }
+            if (!temp[i].standardNo) {
+              temp[i].standardNo = '/'
+            }
+          }
+          this.deptStockList = temp
         })
         .catch((err) => {
           console.log(err)
@@ -193,6 +228,10 @@ export default {
             type: 'error'
           })
         })
+    },
+    handleCurrentChange: function (currentPage) {
+      this.currentPage = currentPage
+      this.getStocksList()
     },
     saveExpend: function () {
       // console.log(this.expendForm)

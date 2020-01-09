@@ -152,21 +152,16 @@ export default {
       let userStr = localStorage.getItem('rms_userInfo')
       if (userStr.length > 0) {
         let userInfo = JSON.parse(userStr)
-        console.log(userInfo)
         this.moduleList = userInfo.userModules
-        console.log(this.moduleList)
       } else {
         this.$router.push({path: '/'})
       }
     },
     checkRank: function (info) {
       let flag
-      console.log(info)
       flag = this.moduleList.some(function (el, i, array) {
-        console.log(el)
         if (el.moduleInfo === info) return true
       })
-      console.log(flag)
       return flag
     }
   },

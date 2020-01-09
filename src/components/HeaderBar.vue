@@ -5,7 +5,7 @@
       :default-active="'1'"
       text-color="#fff"
       active-text-color="#ffd04b">
-        <el-menu-item index="1"><img src="./../assets/reagent.png" width="30px"> <span style="font-size:16px">&nbsp;试剂管理系统</span></el-menu-item>
+        <el-menu-item index="1"><router-link to="/MainBoard" tag="span"><img src="./../assets/reagent.png" width="30px"> <span style="font-size:16px">&nbsp;试剂管理系统</span></router-link></el-menu-item>
         <el-menu-item index="3" style="float:right" title="下次将无法自动登录" @click="logOutPage"><i class="el-icon-switch-button"></i>注销</el-menu-item>
         <el-menu-item index="4" style="float:right"><i class="el-icon-user-solid"></i>{{userName}}，您好！</el-menu-item>
     </el-menu>

@@ -140,7 +140,9 @@
       :close-on-click-modal="false">
       <el-card class="box-card">
         <el-row >
-          <el-col style="margin-top:-15px"><el-divider>申 购 信 息</el-divider></el-col>
+          <el-col style="margin-top:-15px">
+            <el-divider>申 购 信 息</el-divider>
+          </el-col>
         </el-row>
         <el-row>
           <el-col :span="4" align="right">名称：</el-col>
@@ -162,6 +164,15 @@
           <el-col style="margin-top:5px"><el-divider>入 库 信 息</el-divider></el-col>
         </el-row>
         <el-form ref="stockInForm" :inline="true" :model="stockInForm" label-width="80px">
+          <el-row>
+            <el-col :span="18" class="form-item">
+              <el-form-item label="名称" prop="reagentName">
+                <el-input v-model="stockInForm.reagentName" readonly="readonly" size="mini" style="width:150px" label="名称"></el-input>
+              </el-form-item>
+              <el-link type="primary" @click="showReagentInfo" style="margin-top:10px">更改</el-link>
+              <el-link type="primary" style="margin-top:10px">新建</el-link>
+            </el-col>
+          </el-row>
           <el-row>
             <el-col :span="12" class="form-item">
               <el-form-item
@@ -263,6 +274,135 @@
         <el-button type="primary" @click="saveStockIn">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      title="查询试剂"
+      :visible.sync="dialogReagentSearch"
+      width="800px"
+      :close-on-click-modal="false">
+      <el-card class="box-card">
+        <el-row>
+            <el-col :span="18">
+              <div>
+                查询&nbsp;&nbsp;&nbsp;<el-select v-model="searchInfo.searchReagentTypeID" placeholder="试剂类别" size="small" style="width:120px">
+                <el-option
+                  v-for="item in reagentType"
+                  :key="item.typeID"
+                  :label="item.typeName"
+                  :value="item.typeID">
+                </el-option>
+                </el-select>
+                <el-input style="width:200px" placeholder="名称,CAS或简码" v-model="searchInfo.searchReagent" size="small">
+                  <el-button slot="append" icon="el-icon-search" @click="getReagentInfoList"></el-button>
+                </el-input>
+              </div>
+            </el-col>
+            <el-col :span="6">
+              <el-pagination
+                @current-change="handleCurrentChange"
+                layout="prev, pager, next"
+                style="float:right"
+                :page-size="this.pageSize"
+                :current-page="this.currentPage"
+                :total="this.pageCount">
+              </el-pagination>
+            </el-col>
+          </el-row>
+          <el-divider></el-divider>
+          <el-table
+          :data="reagentInfoData"
+          style="width: 100%"
+          max-height="450"
+          size="mini"
+          >
+          <el-table-column type="expand">
+            <template slot-scope="props">
+              <el-row>
+                <el-col :span="3" class="detailTitle">
+                  名称：
+                </el-col>
+                <el-col :span="9">
+                  {{ props.row.reagentName }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  短码：
+                </el-col>
+                <el-col :span="9">
+                  {{ props.row.reagentShortCode }}
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="3" class="detailTitle">
+                  类型：
+                </el-col>
+                <el-col :span="9">
+                  {{ props.row.typeName }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  CAS：
+                </el-col>
+                <el-col :span="9">
+                  {{ props.row.CAS }}
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="3" class="detailTitle">
+                  规格：
+                </el-col>
+                <el-col :span="9">
+                  {{ props.row.reagentSpec }}
+                </el-col>
+                <el-col :span="3" class="detailTitle">
+                  危化类别：
+                </el-col>
+                <el-col :span="9">
+                  {{ props.row.dangerName }}
+                </el-col>
+              </el-row>
+              <el-row>
+                <el-col :span="3" class="detailTitle">
+                  关键字：
+                </el-col>
+                <el-col :span="21">
+                  {{ props.row.keywords }}
+                </el-col>
+              </el-row>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="reagentID"
+            label="序号"
+            width="50"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="reagentName"
+            label="试剂名称"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="typeName"
+            label="类别"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            prop="CAS"
+            label="CAS"
+            align="center">
+          </el-table-column>
+          <el-table-column
+            label="操作"
+            width="150px"
+            align="center">
+              <template slot-scope="scope">
+                <el-button
+                size="mini"
+                type="primary"
+                @click="choiceReagent(scope.row)">更改</el-button>
+              </template>
+              </el-table-column>
+          </el-table>
+      </el-card>
+    </el-dialog>
   </div>
 </template>
 
@@ -272,9 +412,12 @@ export default {
   name: 'ApplicationOrderManage',
   data () {
     return {
+      reagentInfoData: [], // 试剂信息
+      reagentType: [],
       recordList: [], // 批号可选列表
       currentOrder: {}, // 当前正在处理的订单
       dialogStockInVisible: false, // 入库窗口显示标志
+      dialogReagentSearch: false, // 更改试剂窗口
       stockInInfo: {},
       stockInForm: {
         orderSpec: '',
@@ -287,15 +430,83 @@ export default {
         stockBrand: '', // 试剂品牌
         composition: '', // 含量
         expiryDate: '', // 过期日期
-        standardNo: ''
+        standardNo: '',
+        reagentName: '',
+        reagentID: 0,
+        test: ''
       },
       orderList: [],
       purityData: [],
       orderDetail: [],
-      expands: [] // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
+      expands: [], // 表格中展开的行，对应表格中 :expand-row-keys 属性值，实现单行展开
+      // 入库查询窗口
+      searchInfo: {
+        searchReagentTypeID: '',
+        searchReagentDangerID: '',
+        searchReagent: ''
+      }, // 用于入库时重新选择试剂
+      currentPage: 1,
+      pageSize: 5,
+      pageCount: 0
     }
   },
   methods: {
+    choiceReagent: function (row) {
+      this.stockInForm.reagentName = row.reagentName
+      this.stockInForm.reagentID = row.reagentID
+      this.getBatchNoList(row.reagentID)
+      this.dialogReagentSearch = false
+    },
+    showReagentInfo: function () {
+      this.dialogReagentSearch = true
+    },
+    handleCurrentChange (currentPage) {
+      this.currentPage = currentPage
+      this.getReagentInfoList()
+    },
+    // 用于入库时，查询更改试剂信息
+    getReagentInfoList: function () {
+      axios({
+        method: 'get',
+        url: '/api/reagentInfo/getreagentInfoList',
+        params: {
+          searchInfo: this.searchInfo,
+          pageInfo: {
+            pageSize: this.pageSize,
+            currentPage: this.currentPage
+          }
+        }
+      })
+        .then((res) => {
+          this.reagentInfoData = res.data.data
+          this.pageCount = res.data.count
+          // this.getBaseFullName()
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
+    getBaseInfoList () {
+      axios({
+        method: 'get',
+        url: '/api/reagentInfo/getBaseInfo'
+      })
+        .then((res) => {
+          this.reagentType = res.data.reagentType
+          this.reagentType.unshift({typeID: 0, typeName: '全部', state: 1})
+        })
+        .catch((err) => {
+          console.log(err)
+          this.$message({
+            message: '服务器错误！',
+            type: 'error'
+          })
+        })
+    },
     // 入库窗口关闭时，窗口内容初始化
     closeDialog: function () {
       this.$refs['stockInForm'].resetFields()
@@ -404,7 +615,6 @@ export default {
     },
     handleChoice: function (row) {
       this.stockInInfo = row
-      console.log(row)
       for (let i = 0; i < this.orderDetail.length; i++) {
         if (this.orderDetail[i].orderDetailID === row.orderDetailID) {
           this.stockInInfo.specList = this.orderDetail[i].reagentSpec.split(',')
@@ -422,6 +632,7 @@ export default {
       this.stockInForm.reagentID = row.reagentID
       this.stockInForm.orderDetailID = row.orderDetailID
       this.stockInForm.orderID = row.orderID
+      this.stockInForm.reagentName = row.reagentName
 
       this.stockInForm.disabledRecord = true
       this.stockInForm.stockRecordNo = '/'
@@ -439,12 +650,16 @@ export default {
           this.stockInForm.disabledRecord = false
           break
       }
-
+      this.getBatchNoList(row.reagentID)
+      this.dialogStockInVisible = true
+    },
+    // 获取批号列表
+    getBatchNoList: function (reagentID) {
       axios({
         method: 'get',
         url: '/api/stocks/getStocksByReagentID',
         params: {
-          reagentID: row.reagentID
+          reagentID: reagentID
         }
       })
         .then((res) => {
@@ -461,8 +676,6 @@ export default {
             type: 'error'
           })
         })
-
-      this.dialogStockInVisible = true
     },
     handleStockIn: function (row) {
       // 入库处理
@@ -649,6 +862,7 @@ export default {
     }
   },
   mounted: function () {
+    this.getBaseInfoList()
     this.getOrderList()
     this.getPurityList()
   }

@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import MainBoard from '@/components/MainBoard'
 import Login from '@/components/Login'
+import QuickStart from '@/components/QuickStart'
+
 import DepartmentSet from '@/components/BaseSets/DepartmentSet'
 import ReagentTypeSet from '@/components/BaseSets/ReagentTypeSet'
 import ReagentStateSet from '@/components/BaseSets/ReagentStateSet'
@@ -50,9 +52,13 @@ export default new Router({
     },
     {
       path: '/MainBoard',
-      name: 'MainBoard',
       component: MainBoard,
       children: [
+        {
+          path: '/',
+          name: 'QuickStart',
+          component: QuickStart
+        },
         {
           path: '/DepartmentSet',
           component: DepartmentSet

@@ -242,7 +242,7 @@ export default {
         }
       })
         .then((res) => {
-          let temp = res.data
+          let temp = res.data.data
           for (let i = 0; i < temp.length; i++) {
             if (!temp[i].CAS) {
               temp[i].CAS = '/'
@@ -251,7 +251,6 @@ export default {
               temp[i].standardNo = '/'
             }
           }
-          console.log(temp)
           this.stocksList = temp
           this.pageCount = res.data.count
         })
