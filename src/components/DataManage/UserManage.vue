@@ -39,8 +39,16 @@
               align="center">
           </el-table-column>
           <el-table-column
+              prop="signName"
+              label="签名"
+              align="center">
+              <template slot-scope="scope">
+                <el-link type="primary" @click="showSign(scope.row.signName)">{{scope.row.signName}}</el-link>
+              </template>
+          </el-table-column>
+          <el-table-column
             label="操作"
-            width="350px"
+            width="400px"
             align="center">
               <template slot-scope="scope">
                 <el-button
@@ -51,6 +59,10 @@
                 size="mini"
                 type="warning"
                 @click="handleRole(scope.$index, scope.row)">角色</el-button>
+                <el-button
+                size="mini"
+                type="success"
+                @click="handleSign(scope.row)">签名</el-button>
                 <el-button
                 size="mini"
                 type="primary"
@@ -268,7 +280,55 @@
         <el-button type="primary" @click="setRoleList">确 定</el-button>
       </div>
     </el-dialog>
-    <!-- 删除部门信息对话框采用 MessageBox弹框方式 -->
+    <!-- 上传签名 -->
+    <el-dialog
+    title="上传签名"
+    :visible.sync="upLoadSignDialogVisible"
+    width="600px">
+      <el-form
+      :model="userRoleForm"
+      style="margin-right:30px"
+      ref="userRoleForm"
+      >
+        <el-row>
+          <el-col :span="24">
+            <el-upload
+              action="http://localhost:3000/api/user/uploadSign"
+              ref="uploadSign"
+              :limit=1
+              :file-list="fileList"
+              :data="signData"
+              :auto-upload=true
+              :on-success="uploadSuccess"
+              list-type="picture">
+              <el-button size="small" type="primary">点击上传</el-button>
+              <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+            </el-upload>
+          </el-col>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="upLoadSignDialogVisible = false">关 闭</el-button>
+      </div>
+    </el-dialog>
+    <!-- 查看签名窗口 -->
+    <el-dialog
+    title="签名"
+    :visible.sync="showSignDialogVisable"
+    width="300px">
+      <el-row>
+        <el-col :span="12">
+          <el-image
+            style="width: 100px; height: 100px"
+            :src="signPicPath"
+            :fit="fit">
+          </el-image>
+        </el-col>
+      </el-row>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showSignDialogVisable = false">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -278,6 +338,9 @@ export default {
   name: 'UserManage',
   data () {
     return {
+      signPicPath: '', // 签名图片路径
+      signData: {}, // 上传签名时附带的数据
+      fileList: [], // 文件上传列表
       roleList: [],
       deptList: [],
       // 初始供应商模拟数据
@@ -293,10 +356,35 @@ export default {
       },
       addDialogVisible: false, // 添加用户信息窗口控制标识
       setRoleDialogVisible: false, // 设置角色信息窗口控制标识
+      upLoadSignDialogVisible: false, // 上传签名窗口控制标志
+      showSignDialogVisable: false, // 查看签名窗口
       modifyDialogVisible: false // 修改用户信息窗口控制标识
     }
   },
   methods: {
+    showSign: function (signName) {
+      this.signPicPath = 'http://localhost:3000/sign/' + signName
+      this.showSignDialogVisable = true
+    },
+    uploadSuccess: function (res) {
+      if (res.result === 1) {
+        this.$message({
+          message: res.msg,
+          type: 'success'
+        })
+        this.$refs['uploadSign'].clearFiles()
+        this.upLoadSignDialogVisible = false
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error'
+        })
+      }
+    },
+    handleSign: function (row) {
+      this.signData.userID = row.userID
+      this.upLoadSignDialogVisible = true
+    },
     addUser: function () {
       // todo 先判断在列表中是否存在相同的供应商名称
       this.$refs['addForm'].validate((isPass, object) => {
@@ -314,7 +402,6 @@ export default {
             }
           }
           if (flag) {
-            console.log(this.addForm)
             axios({
               method: 'post',
               url: '/api/user/addUser',
@@ -527,7 +614,6 @@ export default {
       })
         .then((res) => {
           this.roleList = res.data
-          console.log(this.roleList)
         })
         .catch((err) => {
           console.log(err)
@@ -594,7 +680,6 @@ export default {
           for (let i = 0; i < this.userRoleForm.userRoleList.length; i++) {
             userRoleInfo.userRole.push([this.userRoleForm.userID, this.userRoleForm.userRoleList[i]])
           }
-          console.log(userRoleInfo)
           axios({
             method: 'post',
             url: '/api/user/setUserRole',

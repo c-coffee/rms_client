@@ -55,6 +55,11 @@
           align="center"
           label="名称">
         </el-table-column>
+        <el-table-column
+          prop="stockBatchNo"
+          align="center"
+          label="批号">
+        </el-table-column>
         </el-table-column>
         <el-table-column label="">
             <el-table-column
@@ -87,7 +92,7 @@
       </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button @click="JLA132_Visable = false">取 消</el-button>
-        <el-button type="primary" @click="exportExcel()">导出Excel</el-button>
+        <el-button type="primary" @click="print()">打印</el-button>
       </div>
     </el-dialog>
   </div>
@@ -100,7 +105,8 @@ export default {
   data () {
     return {
       JLA132_Visable: false,
-      JLA132Data: []
+      JLA132Data: [],
+      JLA132_FilePath: ''
     }
   },
   methods: {
@@ -115,10 +121,13 @@ export default {
       })
         .then((res) => {
           let temp = []
-          console.log(res.data)
+          // todo 项目发布之时这里要修改
+          this.JLA132_File = 'http://localhost:3000' + res.data.filePath
+          console.log(this.JLA132_File)
           for (let i = 0; i < res.data.results.length; i++) {
             temp.push({
               reagentName: res.data.results[i].reagentName,
+              stockBatchNo: res.data.results[i].stockBatchNo,
               overwrap: '有（无）异常变化',
               expiry: '未（已）失效',
               storage: '符合（不符合）要求'
@@ -135,8 +144,8 @@ export default {
           })
         })
     },
-    exportExcel () {
-
+    print () {
+      window.open(this.JLA132_File, '_blank')
     }
   },
   mounted: function () {
